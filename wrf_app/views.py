@@ -1,59 +1,69 @@
+import json
+from django.shortcuts import render
+# from wrf_app.wrf_funtions import plotting_a_two_dimensional_field
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework import permissions
+from django.views.decorators.csrf import csrf_exempt
+
+import numpy as np
+from cartopy import crs
 from netCDF4 import Dataset
 import matplotlib.pyplot as plt
-from matplotlib.colormap import get_cmap
-import cartopy.crs as crs
-from cartopy.feature import NaturalEarthFeature
+import geojsoncontour
+from wrf import (getvar, interplevel, vertcross,
+                 CoordPair, ALL_TIMES, to_np,
+                 get_cartopy, latlon_coords,
+                 cartopy_xlim, cartopy_ylim)
 from backend_django_tesis.settings import BASE_DIR
 
-from wrf import (to_np, getvar, smooth2d, get_cartopy, cartopy_xlim,
-                 cartopy_ylim, latlon_coords)
-# Create your views here.
 
-ncfile = Dataset(BASE_DIR/'wrf_app/wrf_files/wrfout_d01_2021-12-12_12_00_00')
+@api_view(['POST'])
+@permission_classes((permissions.AllowAny,))
+def api_mapping(request):
+    success = False
+    status_code = False
 
-# Get the sea level pressure
-slp = getvar(ncfile, "slp")
+    if request.method == 'POST':
+        request_boby = json.loads(request.body)
+        if request_boby.get('map_data') == 'lat':
+            wrfin = Dataset(f'/home/marvin/PycharmProject/projects/wrf_python_tutorial/wrf_tutorial_data/wrfout_d01_2005-08-28_00_00_00')
+            slp = getvar(wrfin, 'slp', timeidx=0)
+            lats, lons = latlon_coords(slp)
 
-# Smooth the sea level pressure since it tends to be noisy near the
-# mountains
-smooth_slp = smooth2d(slp, 3, cenweight=4)
+            figure = plt.figure()
+            ax = figure.add_subplot(111)
+            lvl = np.arange(980, 1030, 5.5)
+            max = lvl.max()
+            invert_lvl = lvl[::-1]
+            contourf = ax.contourf(lons, lats, slp, cmap=plt.cm.jet)
 
-# Get the latitude and longitude points
-lats, lons = latlon_coords(slp)
+            geojson = geojsoncontour.contourf_to_geojson(
+                contourf=contourf,
+                min_angle_deg=3.0,
+                ndigits=3,
+                stroke_width=2,
+                fill_opacity=0.5
+            )
 
-# Get the cartopy mapping object
-cart_proj = get_cartopy(slp)
 
-# Create a figure
-fig = plt.figure(figsize=(12,6))
-# Set the GeoAxes to the projection used by WRF
-ax = plt.axes(projection=cart_proj)
 
-# Download and add the states and coastlines
-states = NaturalEarthFeature(category="cultural", scale="50m",
-                             facecolor="none",
-                             name="admin_1_states_provinces_shp")
-ax.add_feature(states, linewidth=.5, edgecolor="black")
-ax.coastlines('50m', linewidth=0.8)
+            print()
+            # lat = np.array(lats)
+            # lon = np.array(lons)
+            # slp = np.array(slp)
+            status_code = 200
+            response = {
+                'geojson': geojson,
+                'success': True,
+                'lvl': lvl,
+                'max': max,
+                'invert_lvl': invert_lvl,
+            }
 
-# Make the contour outlines and filled contours for the smoothed sea level
-# pressure.
-plt.contour(to_np(lons), to_np(lats), to_np(smooth_slp), 10, colors="black",
-            transform=crs.PlateCarree())
-plt.contourf(to_np(lons), to_np(lats), to_np(smooth_slp), 10,
-             transform=crs.PlateCarree(),
-             cmap=("jet"))
+            return Response(response, status=status_code)
 
-# Add a color bar
-plt.colorbar(ax=ax, shrink=.98)
 
-# Set the map bounds
-ax.set_xlim(cartopy_xlim(smooth_slp))
-ax.set_ylim(cartopy_ylim(smooth_slp))
-
-# Add the gridlines
-ax.gridlines(color="black", linestyle="dotted")
-
-plt.title("Sea Level Pressure (hPa)")
-
-# plt.show()
+def mapping(request):
+    return render(request, 'mapping.html')

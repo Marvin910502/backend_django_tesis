@@ -1,4 +1,3 @@
 .idea
 /backend_django_tesis/.env
-/wrf_app/wrf_files/wrfout_d01_2021-12-12_12_00_00
 ./wrf_app/wrf_files/
