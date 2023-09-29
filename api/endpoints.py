@@ -21,13 +21,12 @@ def api_login_user(request):
     }
 
     if request.method == 'POST':
-        request_post = request.POST
-        request_body = json.loads(request_post.boby)
+        request_body = json.loads(request.body)
         user = User.objects.filter(username=request_body['username']).first()
         if authenticate(username=request_body['username'], password=request_body['password']):
             login(request, user)
             response['success'] = True
-            response['token'] = user.usertoken_set.first()
+            response['token'] = user.usertoken_set.first().token
             response['message'] = 'The user login was successfully'
             status_code = 200
             return Response(response, status=status_code)
@@ -46,7 +45,6 @@ def api_user_registration(request):
 
     if request.method == 'POST':
         request_body = json.loads(request.body)
-        pass
         user = User.objects.create(
             username=request_body['username']
         )
