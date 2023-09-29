@@ -45,19 +45,17 @@ def api_user_registration(request):
     status_code = 401
 
     if request.method == 'POST':
-        request_post = request.POST
-        token = request_post.headers['token']
-        if token:
-            request_body = json.loads(request_post.boby)
-            user = User.objects.create(
-                username=request_body['username']
-            )
-            user.set_password(request_post['password'])
-            user.save()
-            UserToken.objects.create(user=user)
-            status_code = 201
-            response['success'] = True
-            response['message'] = 'The user was registered with success'
-            return Response(response, status=status_code)
+        request_body = json.loads(request.body)
+        pass
+        user = User.objects.create(
+            username=request_body['username']
+        )
+        user.set_password(request_body['password'])
+        user.save()
+        UserToken.objects.create(user=user)
+        status_code = 200
+        response['success'] = True
+        response['message'] = 'The user was registered with success'
+        return Response(response, status=status_code)
 
     return Response(response, status=status_code)
