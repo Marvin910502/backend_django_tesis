@@ -21,13 +21,12 @@ def api_login_user(request):
     }
 
     if request.method == 'POST':
-        request_post = request.POST
-        request_body = json.loads(request_post.boby)
+        request_body = json.loads(request.body)
         user = User.objects.filter(username=request_body['username']).first()
         if authenticate(username=request_body['username'], password=request_body['password']):
             login(request, user)
             response['success'] = True
-            response['token'] = user.usertoken_set.first()
+            response['token'] = user.usertoken_set.first().token
             response['message'] = 'The user login was successfully'
             status_code = 200
             return Response(response, status=status_code)
@@ -45,19 +44,16 @@ def api_user_registration(request):
     status_code = 401
 
     if request.method == 'POST':
-        request_post = request.POST
-        token = request_post.headers['token']
-        if token:
-            request_body = json.loads(request_post.boby)
-            user = User.objects.create(
-                username=request_body['username']
-            )
-            user.set_password(request_post['password'])
-            user.save()
-            UserToken.objects.create(user=user)
-            status_code = 201
-            response['success'] = True
-            response['message'] = 'The user was registered with success'
-            return Response(response, status=status_code)
+        request_body = json.loads(request.body)
+        user = User.objects.create(
+            username=request_body['username']
+        )
+        user.set_password(request_body['password'])
+        user.save()
+        UserToken.objects.create(user=user)
+        status_code = 200
+        response['success'] = True
+        response['message'] = 'The user was registered with success'
+        return Response(response, status=status_code)
 
     return Response(response, status=status_code)
