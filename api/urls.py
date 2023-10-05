@@ -1,8 +1,15 @@
 from django.urls import path
-from api import endpoints
-
+from api.views import RegisterView, LoadUserView, LoginUserView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenVerifyView, TokenRefreshView
 
 urlpatterns = [
-    path('login/', endpoints.api_login_user, name='api_send_token'),
-    path('register/', endpoints.api_user_registration, name='api_user_registration'),
+    # Auth endpoints
+    path('login/', LoginUserView.as_view(), name='api_user_login'),
+    path('register/', RegisterView.as_view(), name='api_user_registration'),
+    # path('login_required/', endpoints.api_login_required, name='api_login_required'),
+    path('account/user/', LoadUserView.as_view()),
+    path('token/', TokenObtainPairView.as_view()),
+    path('token/refresh/', TokenRefreshView.as_view()),
+    path('token/verify/', TokenVerifyView.as_view()),
+    # Plot data endpoints
 ]

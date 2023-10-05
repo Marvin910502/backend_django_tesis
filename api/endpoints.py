@@ -1,59 +1,61 @@
 import json
 
+from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework import permissions
+from rest_framework import permissions, status
 
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-
-from api.models import UserToken
-
-
-@api_view(['POST'])
-@permission_classes((permissions.AllowAny,))
-def api_login_user(request):
-    status_code = 401
-    response = {
-        'success': False,
-        'token': '',
-        'message': 'The request failed',
-    }
-
-    if request.method == 'POST':
-        request_body = json.loads(request.body)
-        user = User.objects.filter(username=request_body['username']).first()
-        if authenticate(username=request_body['username'], password=request_body['password']):
-            login(request, user)
-            response['success'] = True
-            response['token'] = user.usertoken_set.first().token
-            response['message'] = 'The user login was successfully'
-            status_code = 200
-            return Response(response, status=status_code)
-    return Response(response, status=status_code)
+from .serializers import UserSerializer
 
 
-@api_view(['POST'])
-@permission_classes((permissions.AllowAny,))
-def api_user_registration(request):
-    response = {
-        'success': False,
-        'message': 'The request failed'
-    }
+class RegisterView(APIView):
+    permission_classes = (permissions.AllowAny,)
 
-    status_code = 401
-
-    if request.method == 'POST':
-        request_body = json.loads(request.body)
-        user = User.objects.create(
-            username=request_body['username']
+    def post(self, request, format=None):
+        data = request.data
+        
+        username = data['username']
+        password = data['password']
+        
+        User.objects.create_user(
+            username=username,
+            password=password
         )
-        user.set_password(request_body['password'])
-        user.save()
-        UserToken.objects.create(user=user)
-        status_code = 200
-        response['success'] = True
-        response['message'] = 'The user was registered with success'
-        return Response(response, status=status_code)
+        
+        return Response({"success": "User create successfully"}, status=status.HTTP_201_CREATED)
 
-    return Response(response, status=status_code)
+
+class LoadUserView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request, format=None):
+        try:
+            user = request.user
+            user = UserSerializer(user)
+            return Response({"user": user.data}, status.HTTP_200_OK)
+        except:
+            return Response({'error': 'Something went wrong when trying load user'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class LoginUserView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, format=None):
+        try:
+            data = request.data
+            username = data['username']
+            password = data['password']
+            user = User.objects.filter(username=username).first()
+            if authenticate(username=username, password=password):
+                login(request, user)
+                return Response({'success': 'User login in successfully'}, status.HTTP_200_OK)
+        except:
+            return Response({'error': 'Something went wrong when user try to login'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+
+
