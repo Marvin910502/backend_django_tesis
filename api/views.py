@@ -10,7 +10,8 @@ from .serializers import UserSerializer
 class RegisterView(APIView):
     permission_classes = (permissions.AllowAny,)
 
-    def post(self, request, format=None):
+    @staticmethod
+    def post(request):
         data = request.data
 
         username = data['username']
@@ -18,6 +19,7 @@ class RegisterView(APIView):
 
         User.objects.create_user(
             username=username,
+            email=username,
             password=password
         )
 
@@ -27,7 +29,8 @@ class RegisterView(APIView):
 class LoadUserView(APIView):
     permission_classes = (permissions.AllowAny,)
 
-    def get(self, request, format=None):
+    @staticmethod
+    def get(request):
         try:
             user = request.user
             print(user)
@@ -41,13 +44,14 @@ class LoadUserView(APIView):
 class LoginUserView(APIView):
     permission_classes = (permissions.AllowAny,)
 
-    def post(self, request, format=None):
+    @staticmethod
+    def post(request):
         try:
             data = request.data
-            username = data['username']
+            email = data['username']
             password = data['password']
-            user = User.objects.filter(username=username).first()
-            if authenticate(username=username, password=password):
+            user = User.objects.filter(username=email).first()
+            if authenticate(username=email, password=password):
                 login(request, user)
                 return Response({'success': 'User login in successfully'}, status.HTTP_200_OK)
         except:
