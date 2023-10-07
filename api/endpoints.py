@@ -1,59 +1,85 @@
 import json
 
+from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework import permissions
+from rest_framework import permissions, status
 
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
+from django.utils.decorators import method_decorator
+from django.middleware.csrf import get_token
+from .serializers import UserSerializer
 
-from api.models import UserToken
+
+class CheckAuthenticatedView(APIView):
+    def get(self, request):
+        user = self.request.user
+
+        try:
+            is_authenticated = user.is_authenticated
+
+            if is_authenticated:
+                return Response({'isAuthenticated': 'success'})
+            else:
+                return Response({'isAuthenticated': 'error'})
+        except:
+            return Response({'error': 'Something went wrong when checking authentication status'})
 
 
-@api_view(['POST'])
-@permission_classes((permissions.AllowAny,))
-def api_login_user(request):
-    status_code = 401
-    response = {
-        'success': False,
-        'token': '',
-        'message': 'The request failed',
-    }
+@method_decorator(ensure_csrf_cookie, name='dispatch')
+class GetCSRFToken(APIView):
+    permission_classes = (permissions.AllowAny,)
 
-    if request.method == 'POST':
-        request_body = json.loads(request.body)
-        user = User.objects.filter(username=request_body['username']).first()
-        if authenticate(username=request_body['username'], password=request_body['password']):
+    def get(self, request):
+        return Response({'success': 'CSRF cookie set'}, headers={'Set-Cookie': f'csrftoken={get_token(request)}; domain=http://127.0.0.1:8000'})
+
+
+class RegisterView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        data = self.request.data
+
+        username = data['username']
+        password = data['password']
+
+        if User.objects.filter(username=username).first():
+            return Response({'error': 'User already exists'})
+        else:
+            user = User.objects.create_user(
+                username=username,
+                password=password,
+                email=username
+            )
+
+            return Response({"success": "User create successfully"}, status=status.HTTP_201_CREATED)
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class LoginView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        data = self.request.data
+
+        username = data['username']
+        password = data['password']
+
+        user = authenticate(username=username, password=password)
+
+        if user:
             login(request, user)
-            response['success'] = True
-            response['token'] = user.usertoken_set.first().token
-            response['message'] = 'The user login was successfully'
-            status_code = 200
-            return Response(response, status=status_code)
-    return Response(response, status=status_code)
+            return Response({'success': 'User authenticated', 'username': username})
+        else:
+            return Response({'error': 'Error Authenticating'})
 
 
-@api_view(['POST'])
-@permission_classes((permissions.AllowAny,))
-def api_user_registration(request):
-    response = {
-        'success': False,
-        'message': 'The request failed'
-    }
+class LogoutView(APIView):
+    def post(self, request):
+        try:
+            logout(request)
+            return Response({'success': 'Loggout Out'})
+        except:
+            return Response({'error': 'Something went wrong when logging out'})
 
-    status_code = 401
-
-    if request.method == 'POST':
-        request_body = json.loads(request.body)
-        user = User.objects.create(
-            username=request_body['username']
-        )
-        user.set_password(request_body['password'])
-        user.save()
-        UserToken.objects.create(user=user)
-        status_code = 200
-        response['success'] = True
-        response['message'] = 'The user was registered with success'
-        return Response(response, status=status_code)
-
-    return Response(response, status=status_code)
