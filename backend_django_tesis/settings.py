@@ -149,16 +149,10 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [env("CORS_ALLOWED_ORIGIN")]
 
 CORS_ALLOW_HEADERS = (
-    "accept",
+    "Accept",
     "authorization",
     "content-type",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
-    "token",
-    "username",
-    "X-CSRFToken",
-    "csrftoken"
+    "Authorization",
 )
 
 CORS_ALLOW_CREDENTIALS = True
@@ -170,7 +164,7 @@ SIMPLE_JWT = {
 
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,
-    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_TYPES": ("Bearer ",),
     "AUTH_HEADER_NAME": "Authorization",
     "USER_ID_FIELD": "email",
     "USER_ID_CLAIM": "email",
