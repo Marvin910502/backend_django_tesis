@@ -1,15 +1,27 @@
+# Python libraries
 import json
 
+# Rest Framework
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
 
+# Django
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from django.utils.decorators import method_decorator
 from django.middleware.csrf import get_token
-from .serializers import UserSerializer
+
+# WRF libraries
+from netCDF4 import Dataset
+import matplotlib.pyplot as plt
+import geojsoncontour
+import numpy as np
+from wrf import getvar, latlon_coords
+
+
+# Auth endpoints -------------------------------------------------------------------------------------------------------
 
 
 class CheckAuthenticatedView(APIView):
@@ -83,3 +95,42 @@ class LogoutView(APIView):
         except:
             return Response({'error': 'Something went wrong when logging out'})
 
+
+# WRF endpoints --------------------------------------------------------------------------------------------------------
+
+
+class TwoDimensionsVariablesMaps(APIView):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            wrfout = Dataset(data.url)
+            slp = getvar(wrfout, 'slp', timeidx=0)
+            lats, lons = latlon_coords(slp)
+
+            figure = plt.figure()
+            ax = figure.add_subplot(111)
+            lvl = np.arange(980, 1030, 5.5)
+            max = lvl.max()
+            invert_lvl = lvl[::-1]
+            contourf = ax.contourf(lons, lats, slp, cmap=plt.cm.jet)
+
+            geojson = geojsoncontour.contourf_to_geojson(
+                contourf=contourf,
+                min_angle_deg=3.0,
+                ndigits=3,
+                stroke_width=2,
+                fill_opacity=0.5
+            )
+
+            status_code = 200
+            response = {
+                'geojson': geojson,
+                'success': 'The data went process',
+                'lvl': lvl,
+                'max': max,
+                'invert_lvl': invert_lvl,
+            }
+
+            return Response(response, status=status_code)
+        except:
+            return Response({'succes': 'Something went wrong'})
