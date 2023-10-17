@@ -1,5 +1,5 @@
 from django.urls import path
-from api.endpoints import RegisterView, TwoDimensionsVariablesMaps
+from api.endpoints import RegisterView, TwoDimensionsVariablesMaps, GetListFiles
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -14,4 +14,6 @@ urlpatterns = [
     path('register/', RegisterView.as_view()),
     # Plot data endpoints
     path('2d-variables-maps/', TwoDimensionsVariablesMaps.as_view()),
+    # File manager enpoints
+    path('get-wrfout-list/', GetListFiles.as_view())
 ]
