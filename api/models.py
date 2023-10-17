@@ -21,5 +21,5 @@ class WRFoutFileList(models.Model):
                 cls.objects.create(
                     name=file.name,
                     path=file.path,
-                    size=file.__sizeof__()
+                    size=round(float(file.stat().st_size)/1000000, 2)
                 )
