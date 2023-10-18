@@ -54,21 +54,34 @@ class RegisterView(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
-        data = self.request.data
+        try:
+            data = self.request.data
 
-        username = data['username']
-        password = data['password']
+            username = data['username']
+            password = data['password']
+            name = data['name']
+            last_names = data['last_names']
+            department = data['department']
 
-        if User.objects.filter(username=username).first():
-            return Response({'error': 'User already exists'})
-        else:
-            User.objects.create_user(
-                username=username,
-                password=password,
-                email=username
-            )
+            if User.objects.filter(username=username).first():
+                return Response({'error': 'User already exists'})
+            else:
+                user = User.objects.create_user(
+                    username=username,
+                    password=password,
+                    email=username
+                )
+                Worker.objects.create(
+                    user=user,
+                    name=name,
+                    last_names=last_names,
+                    department=department,
+                    isGuess=True
+                )
 
-            return Response({"success": "User create successfully"}, status=status.HTTP_201_CREATED)
+                return Response({"success": "User create successfully"}, status=status.HTTP_201_CREATED)
+        except:
+            return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # WRF diagnostic endpoints ---------------------------------------------------------------------------------------------
@@ -76,6 +89,7 @@ class RegisterView(APIView):
 
 class TwoDimensionsVariablesMaps(APIView):
     permission_classes = (permissions.AllowAny,)
+
     def post(self, request):
         try:
             data = self.request.data
