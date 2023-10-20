@@ -12,3 +12,34 @@ MAPS_RESULT_2D = {
 }
 
 
+MAPS_DIAGNOSTICS_2D_LABEL = {
+    'punto_de_condensacion': 'Punto de condensación',
+    'temperatura': 'Temperatura',
+    'altura_del_terreno': 'Altura del terreno',
+    'temperatura_superior_nubes': 'Temperatura superior de las nubes',
+    'helicidad_relativa_tormenta': 'Helicidad relativa de tormenta',
+    'agua_precipitable': 'Agua precipitable',
+    'humedad_relativa': 'Humedad relativa',
+    'presion_nivel_del_mar': 'Presion a nivel del mar',
+    'helicidad_corriente_ascendente': 'Helicidad de corriente ascendente',
+}
+
+MAPS_UNITS_LABEL = {
+    'degC': 'grados C',
+    'degF': 'grados F',
+    'K': 'K',
+    'm': 'm',
+    'km': 'km',
+    'dm': 'dm',
+    'ft': 'pies',
+    'defaultm2': 'm2',
+    'defaultkg': 'kg',
+    'default%': 'porciento',
+    'hPa': 'hPa',
+    'Pa': 'Pa',
+    'mb': 'mb',
+    'torr': 'torr',
+    'mmhg': 'mmhg',
+    'atm': 'atm',
+    'defaultK': 'K'
+}

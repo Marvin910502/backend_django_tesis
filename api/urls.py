@@ -1,5 +1,5 @@
 from django.urls import path
-from api.endpoints import RegisterView, TwoDimensionsVariablesMaps, GetListFiles, GetUserData
+from api.endpoints import RegisterView, TwoDimensionsVariablesMaps, GetListFiles, GetUserData, SaveMapData, GetListMapData, DeleteMapData
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -16,5 +16,9 @@ urlpatterns = [
     # Plot data endpoints
     path('2d-variables-maps/', TwoDimensionsVariablesMaps.as_view()),
     # File manager enpoints
-    path('get-wrfout-list/', GetListFiles.as_view())
+    path('get-wrfout-list/', GetListFiles.as_view()),
+    # Worker data endpoints
+    path('save-map-data/', SaveMapData.as_view()),
+    path('get-list-map-data/', GetListMapData.as_view()),
+    path('delete-map-data/', DeleteMapData.as_view())
 ]
