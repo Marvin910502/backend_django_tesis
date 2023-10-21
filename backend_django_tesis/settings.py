@@ -169,3 +169,6 @@ SIMPLE_JWT = {
     "USER_ID_FIELD": "email",
     "USER_ID_CLAIM": "email",
 }
+
+
+FILE_UPLOAD_MAX_MEMORY_SIZE = 100000000000

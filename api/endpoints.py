@@ -10,10 +10,12 @@ from rest_framework import permissions, status
 
 # Django
 from django.contrib.auth.models import User
+from django.utils.text import slugify
 from api.models import WRFoutFileList
 from workers.models import Worker, Map
+from backend_django_tesis.settings import BASE_DIR
 
-# WRF libraries
+# WRF processing libraries
 from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 import geojsoncontour
@@ -140,19 +142,54 @@ class TwoDimensionsVariablesMaps(APIView):
 class GetListFiles(APIView):
     permission_classes = (permissions.AllowAny,)
 
-    def get(self, request):
+    def post(self, request):
         WRFoutFileList.refresh_list_of_files()
+        data = self.request.data
         list_file = []
-        for file in WRFoutFileList.objects.all().order_by('name'):
+        for file in WRFoutFileList.objects.all().order_by(data.get('order')):
+            if file.path_file:
+                path = file.path_file.path
+            else:
+                path = file.path_string
             list_file.append(
                 {
                     'name': file.name,
-                    'path': file.path,
+                    'path': path,
                     'size': file.size,
                 }
             )
 
         return Response(list_file, status=200)
+
+
+class SaveFile(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        try:
+            data = self.request.data
+            file = data.get('file')
+            WRFoutFileList.objects.create(
+                name=file.name.replace(' ', '_').replace('(', '').replace(')', '').replace('[', '').replace(']', ''),
+                path_file=file,
+                size=round(file.size/1000000, 2)
+            )
+
+            return Response({'success': 'The was uploaded'}, status=status.HTTP_201_CREATED)
+        except:
+            return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class DeleteFile(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        try:
+            data = self.request.data
+            os.remove(f"{BASE_DIR}/wrfout_files/{data.get('file_name')}")
+            return Response({'success': 'The file was deleted'})
+        except:
+            return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # Worker map data endpoints --------------------------------------------------------------------------------------------
