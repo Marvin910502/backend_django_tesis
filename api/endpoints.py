@@ -21,6 +21,10 @@ import matplotlib.pyplot as plt
 import geojsoncontour
 import numpy as np
 from wrf import getvar, latlon_coords
+from wrf.interp import vertcross
+from wrf.coordpair import CoordPair
+from wrf.util import to_np
+from scipy.spatial import Delaunay
 
 # Selectors
 from api.type_data import MAPS_RESULT_2D, MAPS_DIAGNOSTICS_2D_LABEL, MAPS_UNITS_LABEL
@@ -134,6 +138,50 @@ class TwoDimensionsVariablesMaps(APIView):
             return Response(response, status=status_code)
         except:
             return Response({'error': 'Something went wrong'}, status=500)
+
+
+class CrossSections(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+
+        data = self.request.data
+
+        cross_start = CoordPair(lat=26.75, lon=-91.7)
+        cross_end = CoordPair(lat=26.75, lon=-86.7)
+        wrfout = Dataset(f'{BASE_DIR}/wrfout_files/wrfout_d01_2005-08-28_00_00_00')
+        ht = getvar(wrfout, "z", timeidx=0)
+        slp = getvar(wrfout, "rh2", timeidx=0)
+        # z = 10**(dbz/10.)
+        # z_cross = vertcross(z,
+        #                     ht,
+        #                     wrfin=wrfout,
+        #                     start_point=cross_start,
+        #                     end_point=cross_end,
+        #                     latlon=True,
+        #                     meta=True)
+        slp_dict = slp.to_dict()
+        slp_data = slp_dict['data']
+        # # dict_cross = z_cross.to_dict()
+        # # data_out = dict_cross['data']
+        # # data_to_send = []
+        # # for element in data_out:
+        # #     element_to_send = []
+        # #     for inter_element in element:
+        # #         element_to_send.append(inter_element)
+        # #     data_to_send.append(element_to_send)
+        #
+        # # coords = dict_cross['coords']['xy_loc']['data']
+        # # vertical = dict_cross['coords']['vertical']['data']
+
+        response = {
+            'data': json.dumps(slp_data),
+            # 'coords': json.dumps(coords),
+            # 'vertical': json.dumps(vertical),
+            'success': 'The data went process',
+        }
+
+        return Response(response, status=status.HTTP_200_OK)
 
 
 # Files manager endpoints ----------------------------------------------------------------------------------------------
