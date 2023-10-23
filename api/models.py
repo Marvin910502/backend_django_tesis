@@ -2,24 +2,35 @@ import base64
 import os
 import uuid
 
+
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.text import slugify
 from backend_django_tesis.settings import BASE_DIR
 
 
 # Create your models here.
 
 class WRFoutFileList(models.Model):
-    name = models.CharField(max_length=150)
-    path = models.TextField()
+    name = models.TextField(unique=True)
+    path_file = models.FileField(upload_to="wrfout_files/", blank=True, null=True)
+    path_string = models.TextField(blank=True, null=True)
     size = models.FloatField()
 
     @classmethod
     def refresh_list_of_files(cls):
-        for file in os.scandir(f"{BASE_DIR}/wrfout_files/"):
-            if not cls.objects.filter(name=file.name).first():
-                cls.objects.create(
-                    name=file.name,
-                    path=file.path,
-                    size=round(float(file.stat().st_size)/1000000, 2)
-                )
+        # files = os.scandir(f"{BASE_DIR}/wrfout_files/")
+        # for file in files:
+        #     if not cls.objects.filter(name=slugify(file.name)).first() and not cls.objects.filter(name=file.name).first():
+        #         try:
+        #             cls.objects.create(
+        #                 name=slugify(file.name),
+        #                 path_string=file.path,
+        #                 size=round(float(file.stat().st_size)/1000000, 2)
+        #             )
+        #         except:
+        #             pass
+        for file in cls.objects.all():
+            for root, dirs, files in os.walk(f"{BASE_DIR}/wrfout_files/"):
+                if not file.name in files:
+                    file.delete()

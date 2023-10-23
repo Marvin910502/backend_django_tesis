@@ -12,3 +12,13 @@ class Worker(models.Model):
     isAdmin = models.BooleanField(default=False)
     isGuess = models.BooleanField(default=False)
     isManager = models.BooleanField(default=False)
+
+
+class Map(models.Model):
+    worker = models.ForeignKey(Worker, on_delete=models.CASCADE)
+    geojson = models.TextField()
+    diagnostic = models.CharField(max_length=100)
+    unit = models.CharField(max_length=20)
+    polygons = models.IntegerField()
+    file_name = models.CharField(max_length=100)
+

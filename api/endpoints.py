@@ -10,10 +10,12 @@ from rest_framework import permissions, status
 
 # Django
 from django.contrib.auth.models import User
+from django.utils.text import slugify
 from api.models import WRFoutFileList
-from workers.models import Worker
+from workers.models import Worker, Map
+from backend_django_tesis.settings import BASE_DIR
 
-# WRF libraries
+# WRF processing libraries
 from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 import geojsoncontour
@@ -21,7 +23,7 @@ import numpy as np
 from wrf import getvar, latlon_coords
 
 # Selectors
-from api.type_data import MAPS_RESULT_2D
+from api.type_data import MAPS_RESULT_2D, MAPS_DIAGNOSTICS_2D_LABEL, MAPS_UNITS_LABEL
 
 
 # Auth endpoints -------------------------------------------------------------------------------------------------------
@@ -97,7 +99,7 @@ class TwoDimensionsVariablesMaps(APIView):
             diagnostic = MAPS_RESULT_2D[data.get('diagnostic')]
             index = data.get('index')
             units = data.get('units')
-            section_amount = data.get('section_amount')
+            polygons = data.get('polygons')
 
             wrfout = [Dataset(url) for url in urls]
             if 'default' in units:
@@ -107,7 +109,7 @@ class TwoDimensionsVariablesMaps(APIView):
             maximum = round(diag.data.max(), 8)
             minimum = round(diag.data.min(), 8)
             extra_max = 0.2*maximum/100
-            intervals = round((maximum - minimum) / section_amount, 8)
+            intervals = round((maximum - minimum) / polygons, 8)
             lats, lons = latlon_coords(diag)
 
             figure = plt.figure()
@@ -140,16 +142,124 @@ class TwoDimensionsVariablesMaps(APIView):
 class GetListFiles(APIView):
     permission_classes = (permissions.AllowAny,)
 
-    def get(self, request):
+    def post(self, request):
         WRFoutFileList.refresh_list_of_files()
+        data = self.request.data
         list_file = []
-        for file in WRFoutFileList.objects.all().order_by('name'):
+        for file in WRFoutFileList.objects.all().order_by(data.get('order')):
+            if file.path_file:
+                path = file.path_file.path
+            else:
+                path = file.path_string
             list_file.append(
                 {
                     'name': file.name,
-                    'path': file.path,
+                    'path': path,
                     'size': file.size,
                 }
             )
 
         return Response(list_file, status=200)
+
+
+class SaveFile(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        try:
+            data = self.request.data
+            file = data.get('file')
+            WRFoutFileList.objects.create(
+                name=file.name.replace(' ', '_').replace('(', '').replace(')', '').replace('[', '').replace(']', ''),
+                path_file=file,
+                size=round(file.size/1000000, 2)
+            )
+
+            return Response({'success': 'The was uploaded'}, status=status.HTTP_201_CREATED)
+        except:
+            return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class DeleteFile(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        try:
+            data = self.request.data
+            os.remove(f"{BASE_DIR}/wrfout_files/{data.get('file_name')}")
+            return Response({'success': 'The file was deleted'})
+        except:
+            return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# Worker map data endpoints --------------------------------------------------------------------------------------------
+
+
+class SaveMapData(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        try:
+            data = self.request.data
+            worker = Worker.objects.filter(user__email=data['user']).first()
+            geojson = data.get('geojson')
+            diagnostic = data.get('diagnostic')
+            units = data.get('units')
+            polygons = data.get('polygons')
+            file_name = data.get('file_name')
+
+            maps = Map.objects.filter(worker=worker)
+            if not maps.filter(file_name=file_name).first():
+                Map.objects.create(
+                    worker=worker,
+                    geojson=geojson,
+                    diagnostic=diagnostic,
+                    unit=units,
+                    polygons=polygons,
+                    file_name=file_name
+                )
+                return Response({'success': 'A map data was save with success'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'error': 'Something went wrong'}, status=status.HTTP_208_ALREADY_REPORTED)
+        except:
+            return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class GetListMapData(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        try:
+            data = self.request.data
+            worker = Worker.objects.filter(user__email=data.get('username')).first()
+            maps = Map.objects.filter(worker=worker).order_by(data.get('order_element'))
+            response = []
+            for map in maps:
+                response.append({
+                    'geojson': map.geojson,
+                    'diagnostic_label': MAPS_DIAGNOSTICS_2D_LABEL[map.diagnostic],
+                    'units_label': MAPS_UNITS_LABEL[map.unit],
+                    'polygons': map.polygons,
+                    'file_name': map.file_name,
+                    'diagnostic': map.diagnostic,
+                    'units': map.unit
+                })
+
+            return Response(response, status=status.HTTP_200_OK)
+        except:
+            return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class DeleteMapData(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        try:
+            data = self.request.data
+            worker = Worker.objects.filter(user__email=data.get('username')).first()
+            map = Map.objects.filter(file_name=data.get('file_name'), worker=worker).first()
+            map.delete()
+            return Response({'success': 'Map data deleted'}, status=status.HTTP_200_OK)
+        except:
+            return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
