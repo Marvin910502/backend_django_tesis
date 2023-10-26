@@ -20,11 +20,8 @@ from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 import geojsoncontour
 import numpy as np
-from wrf import getvar, latlon_coords
-from wrf.interp import vertcross
-from wrf.coordpair import CoordPair
-from wrf.util import to_np
-from scipy.spatial import Delaunay
+from wrf import getvar, latlon_coords, extract_times
+
 
 # Selectors
 from api.type_data import MAPS_RESULT_2D, MAPS_DIAGNOSTICS_2D_LABEL, MAPS_UNITS_LABEL
@@ -102,10 +99,11 @@ class TwoDimensionsVariablesMaps(APIView):
             urls = data.get('url')
             diagnostic = MAPS_RESULT_2D[data.get('diagnostic')]
             index = data.get('index')
-            units = data.get('units')
+            units = MAPS_UNITS_LABEL.get(data.get('units'))
             polygons = data.get('polygons')
 
             wrfout = [Dataset(url) for url in urls]
+
             if 'default' in units:
                 diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index)
             else:
@@ -146,38 +144,36 @@ class CrossSections(APIView):
     def post(self, request):
 
         data = self.request.data
+        urls = data.get('url')
+        index = data.get('index')
+        diagnostic = MAPS_RESULT_2D.get(data.get('diagnostic'))
+        units = MAPS_UNITS_LABEL.get(data.get('units'))
+        print(units)
 
-        cross_start = CoordPair(lat=26.75, lon=-91.7)
-        cross_end = CoordPair(lat=26.75, lon=-86.7)
-        wrfout = Dataset(f'{BASE_DIR}/wrfout_files/wrfout_d01_2005-08-28_00_00_00')
-        ht = getvar(wrfout, "z", timeidx=0)
-        slp = getvar(wrfout, "rh2", timeidx=0)
-        # z = 10**(dbz/10.)
-        # z_cross = vertcross(z,
-        #                     ht,
-        #                     wrfin=wrfout,
-        #                     start_point=cross_start,
-        #                     end_point=cross_end,
-        #                     latlon=True,
-        #                     meta=True)
-        slp_dict = slp.to_dict()
-        slp_data = slp_dict['data']
-        # # dict_cross = z_cross.to_dict()
-        # # data_out = dict_cross['data']
-        # # data_to_send = []
-        # # for element in data_out:
-        # #     element_to_send = []
-        # #     for inter_element in element:
-        # #         element_to_send.append(inter_element)
-        # #     data_to_send.append(element_to_send)
-        #
-        # # coords = dict_cross['coords']['xy_loc']['data']
-        # # vertical = dict_cross['coords']['vertical']['data']
+        wrfout = [Dataset(url) for url in urls]
+        if 'default' in units:
+            diagnostic_data = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index)
+        else:
+            diagnostic_data = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index, units=units)
+
+        diagnostic_dict = diagnostic_data.to_dict()
+
+        diagnostic_array = diagnostic_dict['data']
+        longitudes = diagnostic_dict['coords']['XLONG']['data']
+        min_long = longitudes[0][0]
+        max_long = longitudes[0][-1]
+        latitudes = diagnostic_dict['coords']['XLAT']['data']
+        min_lat = latitudes[0][0]
+        max_lat = latitudes[-1][0]
 
         response = {
-            'data': json.dumps(slp_data),
-            # 'coords': json.dumps(coords),
-            # 'vertical': json.dumps(vertical),
+            'data': json.dumps(diagnostic_array),
+            'longitudes': json.dumps(longitudes),
+            'min_long': min_long,
+            'max_long': max_long,
+            'latitudes': json.dumps(latitudes),
+            'min_lat': min_lat,
+            'max_lat': max_lat,
             'success': 'The data went process',
         }
 
