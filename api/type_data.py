@@ -25,21 +25,24 @@ MAPS_DIAGNOSTICS_2D_LABEL = {
 }
 
 MAPS_UNITS_LABEL = {
-    'degC': 'grados C',
-    'degF': 'grados F',
+    'degC': 'degC',
+    'degCT': 'degC',
+    'degF': 'degF',
     'K': 'K',
     'm': 'm',
     'km': 'km',
     'dm': 'dm',
-    'ft': 'pies',
-    'defaultm2': 'm2',
-    'defaultkg': 'kg',
-    'default%': 'porciento',
+    'ft': 'ft',
     'hPa': 'hPa',
     'Pa': 'Pa',
     'mb': 'mb',
+    'mi': 'mi',
     'torr': 'torr',
     'mmhg': 'mmhg',
     'atm': 'atm',
-    'defaultK': 'K'
+    'defaultK': 'default',
+    'defaultm2': 'default',
+    'defaultm2a': 'default',
+    'default%': 'default',
+    'defaultkg': 'default'
 }

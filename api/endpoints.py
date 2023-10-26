@@ -20,7 +20,8 @@ from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 import geojsoncontour
 import numpy as np
-from wrf import getvar, latlon_coords
+from wrf import getvar, latlon_coords, extract_times
+
 
 # Selectors
 from api.type_data import MAPS_RESULT_2D, MAPS_DIAGNOSTICS_2D_LABEL, MAPS_UNITS_LABEL
@@ -98,10 +99,11 @@ class TwoDimensionsVariablesMaps(APIView):
             urls = data.get('url')
             diagnostic = MAPS_RESULT_2D[data.get('diagnostic')]
             index = data.get('index')
-            units = data.get('units')
+            units = MAPS_UNITS_LABEL.get(data.get('units'))
             polygons = data.get('polygons')
 
             wrfout = [Dataset(url) for url in urls]
+
             if 'default' in units:
                 diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index)
             else:
@@ -134,6 +136,48 @@ class TwoDimensionsVariablesMaps(APIView):
             return Response(response, status=status_code)
         except:
             return Response({'error': 'Something went wrong'}, status=500)
+
+
+class CrossSections(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+
+        data = self.request.data
+        urls = data.get('url')
+        index = data.get('index')
+        diagnostic = MAPS_RESULT_2D.get(data.get('diagnostic'))
+        units = MAPS_UNITS_LABEL.get(data.get('units'))
+        print(units)
+
+        wrfout = [Dataset(url) for url in urls]
+        if 'default' in units:
+            diagnostic_data = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index)
+        else:
+            diagnostic_data = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index, units=units)
+
+        diagnostic_dict = diagnostic_data.to_dict()
+
+        diagnostic_array = diagnostic_dict['data']
+        longitudes = diagnostic_dict['coords']['XLONG']['data']
+        min_long = longitudes[0][0]
+        max_long = longitudes[0][-1]
+        latitudes = diagnostic_dict['coords']['XLAT']['data']
+        min_lat = latitudes[0][0]
+        max_lat = latitudes[-1][0]
+
+        response = {
+            'data': json.dumps(diagnostic_array),
+            'longitudes': json.dumps(longitudes),
+            'min_long': min_long,
+            'max_long': max_long,
+            'latitudes': json.dumps(latitudes),
+            'min_lat': min_lat,
+            'max_lat': max_lat,
+            'success': 'The data went process',
+        }
+
+        return Response(response, status=status.HTTP_200_OK)
 
 
 # Files manager endpoints ----------------------------------------------------------------------------------------------
