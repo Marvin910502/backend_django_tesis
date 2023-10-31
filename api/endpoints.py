@@ -10,6 +10,7 @@ from rest_framework import permissions, status
 
 # Django
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 from django.utils.text import slugify
 from api.models import WRFoutFileList
 from workers.models import Worker, Map
@@ -85,6 +86,62 @@ class RegisterView(APIView):
                 return Response({"success": "User create successfully"}, status=status.HTTP_201_CREATED)
         except:
             return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UpdateUser(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        try:
+            data = self.request.data
+
+            old_username = data['old_username']
+            username = data['username']
+            name = data['name']
+            last_names = data['last_names']
+            department = data['department']
+
+            user = User.objects.filter(username=old_username).first()
+            if user:
+                worker = user.worker_set.first()
+
+                user.username = username
+                user.email = username
+                user.save()
+
+                worker.name = name
+                worker.last_names = last_names
+                worker.department = department
+                worker.save()
+
+                return Response({'success': 'User updated successfully'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'error': 'The user not exist'}, status=status.HTTP_401_UNAUTHORIZED)
+        except:
+            return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ChangePasswd(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        try:
+            data = self.request.data
+
+            username = data['username']
+            old_password = data['old_password']
+            password = data['new_password']
+
+            if authenticate(username=username, password=old_password):
+                user = User.objects.filter(username=username).first()
+                user.set_password(password)
+                user.save()
+
+                return Response({'success': 'Password changed successfully'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'error': 'Wrong old password'}, status=status.HTTP_401_UNAUTHORIZED)
+        except:
+            return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # WRF diagnostic endpoints ---------------------------------------------------------------------------------------------
