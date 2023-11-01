@@ -11,19 +11,19 @@ urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
-    path('register/', RegisterView.as_view()),
-    path('get-user/', GetUserData.as_view()),
-    path('update-user/', UpdateUser.as_view()),
-    path('change-passwd/', ChangePasswd.as_view()),
+    path('register/', RegisterView.as_view(), name='register'),
+    path('get-user/', GetUserData.as_view(), name='get_user'),
+    path('update-user/', UpdateUser.as_view(), name='update_user'),
+    path('change-passwd/', ChangePasswd.as_view(), name='change_passwd'),
     # Plot data endpoints
-    path('2d-variables-maps/', TwoDimensionsVariablesMaps.as_view()),
-    path('cross-sections/', CrossSections.as_view()),
+    path('2d-variables-maps/', TwoDimensionsVariablesMaps.as_view(), name='2d_variables_maps'),
+    path('cross-sections/', CrossSections.as_view(), name='cross_sections'),
     # File manager enpoints
-    path('get-wrfout-list/', GetListFiles.as_view()),
-    path('upload-file/', SaveFile.as_view()),
-    path('delete-file/', DeleteFile.as_view()),
+    path('get-wrfout-list/', GetListFiles.as_view(), name='get_wrfout_list'),
+    path('upload-file/', SaveFile.as_view(), name='upload_file'),
+    path('delete-file/', DeleteFile.as_view(), name='delete_file'),
     # Worker data endpoints
-    path('save-map-data/', SaveMapData.as_view()),
-    path('get-list-map-data/', GetListMapData.as_view()),
-    path('delete-map-data/', DeleteMapData.as_view())
+    path('save-map-data/', SaveMapData.as_view(), name='save_map_data'),
+    path('get-list-map-data/', GetListMapData.as_view(), name='get_list_map_data'),
+    path('delete-map-data/', DeleteMapData.as_view(), name='delete_map_data')
 ]

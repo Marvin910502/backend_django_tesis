@@ -63,12 +63,12 @@ class RegisterView(APIView):
 
             username = data['username']
             password = data['password']
-            name = data['name']
-            last_names = data['last_names']
-            department = data['department']
+            name = data.get('name')
+            last_names = data.get('last_names')
+            department = data.get('department')
 
             if User.objects.filter(username=username).first():
-                return Response({'error': 'User already exists'})
+                return Response({'error': 'User already exists'}, status=status.HTTP_401_UNAUTHORIZED)
             else:
                 user = User.objects.create_user(
                     username=username,
