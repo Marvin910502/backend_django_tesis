@@ -300,11 +300,18 @@ class SaveFile(APIView):
         try:
             data = self.request.data
             file = data.get('file')
-            WRFoutFileList.objects.create(
+            wrf_data = WRFoutFileList.objects.create(
                 name=file.name.replace(' ', '_').replace('(', '').replace(')', '').replace('[', '').replace(']', ''),
                 path_file=file,
                 size=round(file.size/1000000, 2)
             )
+
+            try:
+                wrfout = Dataset(wrf_data.path_file.path)
+            except:
+                os.remove(f"{BASE_DIR}/wrfout_files/{wrf_data.name}")
+                wrf_data.delete()
+                return Response({'error': 'This type of file is not compatible'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
             return Response({'success': 'The was uploaded'}, status=status.HTTP_201_CREATED)
         except:
