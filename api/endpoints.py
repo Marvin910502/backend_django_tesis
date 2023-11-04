@@ -172,6 +172,10 @@ class TwoDimensionsVariablesMaps(APIView):
 
             wrfout = [Dataset(url) for url in urls]
 
+            max_index = 0
+            for file in wrfout:
+                max_index = max_index + file.dimensions['Time'].size
+
             if 'default' in units:
                 try:
                     diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index)
@@ -204,6 +208,7 @@ class TwoDimensionsVariablesMaps(APIView):
 
             response = {
                 'geojson': geojson,
+                'max_index': max_index,
                 'success': 'The data went process',
             }
 
