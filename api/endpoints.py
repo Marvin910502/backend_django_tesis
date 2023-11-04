@@ -154,17 +154,35 @@ class TwoDimensionsVariablesMaps(APIView):
         try:
             data = self.request.data
             urls = data.get('url')
-            diagnostic = MAPS_RESULT_2D[data.get('diagnostic')]
+            diagnostic = MAPS_RESULT_2D.get(data.get('diagnostic'))
             index = data.get('index')
             units = MAPS_UNITS_LABEL.get(data.get('units'))
             polygons = data.get('polygons')
 
+            if not urls:
+                return Response({'error': 'No url data'}, status=status.HTTP_400_BAD_REQUEST)
+            if not diagnostic:
+                return Response({'error': 'No diagnostic data'}, status=status.HTTP_400_BAD_REQUEST)
+            if index is None:
+                return Response({'error': 'No index data'}, status=status.HTTP_400_BAD_REQUEST)
+            if not units:
+                return Response({'error': 'No units data'}, status=status.HTTP_400_BAD_REQUEST)
+            if polygons is None:
+                return Response({'error': 'No polygons data'}, status=status.HTTP_400_BAD_REQUEST)
+
             wrfout = [Dataset(url) for url in urls]
 
             if 'default' in units:
-                diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index)
+                try:
+                    diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index)
+                except:
+                    return Response({'error': 'The diagnostic extraction fail'})
             else:
-                diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index, units=units)
+                try:
+                    diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index, units=units)
+                except:
+                    return Response({'error': 'The diagnostic extraction fail'})
+
             maximum = round(diag.data.max(), 8)
             minimum = round(diag.data.min(), 8)
             extra_max = 0.2*maximum/100
@@ -184,15 +202,14 @@ class TwoDimensionsVariablesMaps(APIView):
                 fill_opacity=0.5,
             )
 
-            status_code = 200
             response = {
                 'geojson': geojson,
                 'success': 'The data went process',
             }
 
-            return Response(response, status=status_code)
+            return Response(response, status=status.HTTP_200_OK)
         except:
-            return Response({'error': 'Something went wrong'}, status=500)
+            return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class CrossSections(APIView):
@@ -205,7 +222,15 @@ class CrossSections(APIView):
         index = data.get('index')
         diagnostic = MAPS_RESULT_2D.get(data.get('diagnostic'))
         units = MAPS_UNITS_LABEL.get(data.get('units'))
-        print(units)
+
+        if not urls:
+            return Response({'error': 'No url data'}, status=status.HTTP_400_BAD_REQUEST)
+        if not diagnostic:
+            return Response({'error': 'No diagnostic data'}, status=status.HTTP_400_BAD_REQUEST)
+        if index is None:
+            return Response({'error': 'No index data'}, status=status.HTTP_400_BAD_REQUEST)
+        if not units:
+            return Response({'error': 'No units data'}, status=status.HTTP_400_BAD_REQUEST)
 
         wrfout = [Dataset(url) for url in urls]
         if 'default' in units:

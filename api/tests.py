@@ -140,6 +140,110 @@ class APITestCase(TestCase):
         response = self.perform_two_dimensional_variables_map_endpoint(self.file_test_data)
         self.assertEquals(response.status_code, 200)
 
-    def test_cross_section(self):
+    def test_2d_maps_without_diagnostic(self):
+        data = {
+            'diagnostic': '',
+            'units': self.file_test_data['units'],
+            'index': self.file_test_data['index'],
+            'polygons': self.file_test_data['polygons'],
+            'url': self.file_test_data['url']
+        }
+        response = self.perform_two_dimensional_variables_map_endpoint(data)
+        self.assertEquals(response.status_code, 400)
+        self.assertEquals(response.data['error'], 'No diagnostic data')
+
+    def test_2d_maps_without_index(self):
+        data = {
+            'diagnostic': self.file_test_data['diagnostic'],
+            'units': self.file_test_data['units'],
+            'index': None,
+            'polygons': self.file_test_data['polygons'],
+            'url': self.file_test_data['url']
+        }
+        response = self.perform_two_dimensional_variables_map_endpoint(data)
+        self.assertEquals(response.status_code, 400)
+        self.assertEquals(response.data['error'], 'No index data')
+
+    def test_2d_maps_without_unit(self):
+        data = {
+            'diagnostic': self.file_test_data['diagnostic'],
+            'units': '',
+            'index': self.file_test_data['index'],
+            'polygons': self.file_test_data['polygons'],
+            'url': self.file_test_data['url']
+        }
+        response = self.perform_two_dimensional_variables_map_endpoint(data)
+        self.assertEquals(response.status_code, 400)
+        self.assertEquals(response.data['error'], 'No units data')
+
+    def test_2d_maps_without_polygons(self):
+        data = {
+            'diagnostic': self.file_test_data['diagnostic'],
+            'units': self.file_test_data['units'],
+            'index': self.file_test_data['index'],
+            'polygons': None,
+            'url': self.file_test_data['url']
+        }
+        response = self.perform_two_dimensional_variables_map_endpoint(data)
+        self.assertEquals(response.status_code, 400)
+        self.assertEquals(response.data['error'], 'No polygons data')
+
+    def test_2d_maps_without_url(self):
+        data = {
+            'diagnostic': self.file_test_data['diagnostic'],
+            'units': self.file_test_data['units'],
+            'index': self.file_test_data['index'],
+            'polygons': self.file_test_data['polygons'],
+            'url': None
+        }
+        response = self.perform_two_dimensional_variables_map_endpoint(data)
+        self.assertEquals(response.status_code, 400)
+        self.assertEquals(response.data['error'], 'No url data')
+
+    def test_cross_section_endpoint(self):
         response = self.perform_cross_sections_endpoint(self.file_test_data)
         self.assertEquals(response.status_code, 200)
+
+    def test_cross_section_without_urls(self):
+        data = {
+            'diagnostic': self.file_test_data['diagnostic'],
+            'units': self.file_test_data['units'],
+            'index': self.file_test_data['index'],
+            'url': None
+        }
+        response = self.perform_cross_sections_endpoint(data)
+        self.assertEquals(response.status_code, 400)
+        self.assertEquals(response.data['error'], 'No url data')
+
+    def test_cross_section_without_diagnostic(self):
+        data = {
+            'diagnostic': '',
+            'units': self.file_test_data['units'],
+            'index': self.file_test_data['index'],
+            'url': self.file_test_data['url']
+        }
+        response = self.perform_cross_sections_endpoint(data)
+        self.assertEquals(response.status_code, 400)
+        self.assertEquals(response.data['error'], 'No diagnostic data')
+
+    def test_cross_section_without_units(self):
+        data = {
+            'diagnostic': self.file_test_data['diagnostic'],
+            'units': '',
+            'index': self.file_test_data['index'],
+            'url': self.file_test_data['url']
+        }
+        response = self.perform_cross_sections_endpoint(data)
+        self.assertEquals(response.status_code, 400)
+        self.assertEquals(response.data['error'], 'No units data')
+
+    def test_cross_section_without_index(self):
+        data = {
+            'diagnostic': self.file_test_data['diagnostic'],
+            'units': self.file_test_data['units'],
+            'index': None,
+            'url': self.file_test_data['url']
+        }
+        response = self.perform_cross_sections_endpoint(data)
+        self.assertEquals(response.status_code, 400)
+        self.assertEquals(response.data['error'], 'No index data')
