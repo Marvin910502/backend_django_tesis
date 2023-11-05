@@ -1,0 +1,75 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{% static 'bootstrap-5.3.2/css/bootstrap.min.css' %}">
+    <link href="{% static 'fontawesome/css/fontawesome.css' %}" rel="stylesheet">
+    <link href="{% static 'fontawesome/css/brands.css' %}" rel="stylesheet">
+    <link href="{% static 'fontawesome/css/solid.css' %}" rel="stylesheet">
+    <title>Title</title>
+    {% block custom_style %}{% endblock custom_style %}
+</head>
+<body id="theme" data-bs-theme="">
+
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <img id="theme_logo" alt="cfa logo" width="45hv" class="" src="{% static 'icons/cfa_logo_dark.png' %}">
+            </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Usuarios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Contenidos</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="theme_selector" onclick="ThemeSelector()" checked>
+                <label id="theme_selector_label" class="form-check-label" for="theme_selector">Dark Mode</label>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <div class="row mt-3 ms-1 me-1">
+            <div class="col-3">
+                <div class="card p-3 flex-row align-items-center justify-content-center">
+                    <i class="fa-regular fa-user me-3 fa-2x" title="Cantidad de Usuarios"><span class="text-success ms-2">{{ users_amount }}</span></i>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="card p-3 flex-row align-items-center justify-content-center">
+                    <i class="fa-regular fa-map me-3 fa-2x" title="Cantidad de Diagnósticos"><span class="text-success ms-2">{{ diagnostics_amount }}</span></i>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="card p-3 flex-row align-items-center justify-content-center">
+                    <i class="fa-regular fa-file me-3 fa-2x" title="Cantidad de Archivos WRFout"><span class="text-success ms-2">{{ files_amount }}</span></i>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="card p-3 flex-row align-items-center justify-content-center">
+                    <i class="fa-regular fa-hard-drive me-3 fa-2x" title="Cantidad de Archivos WRFout"><span class="text-success ms-2">{{ storage_used }} / {{ storage_space }}GB</span></i>
+                </div>
+            </div>
+        </div>
+
+        {% block content %}
+
+        {% endblock content %}
+    </div>
+
+    <script src="{% static 'bootstrap-5.3.2/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'custom/js/theme_mode.js' %}"></script>
+    {% block custom_scripts %}{% endblock custom_scripts %}
+</body>
+</html>

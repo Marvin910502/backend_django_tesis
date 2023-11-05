@@ -307,7 +307,7 @@ class SaveFile(APIView):
             )
 
             try:
-                wrfout = Dataset(wrf_data.path_file.path)
+                Dataset(wrf_data.path_file.path)
             except:
                 os.remove(f"{BASE_DIR}/wrfout_files/{wrf_data.name}")
                 wrf_data.delete()
