@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.utils.text import slugify
 from api.models import WRFoutFileList
-from workers.models import Worker, Map
+from workers.models import Worker, Diagnostic
 from backend_django_tesis.settings import BASE_DIR
 
 # WRF processing libraries
@@ -346,9 +346,9 @@ class SaveMapData(APIView):
             polygons = data.get('polygons')
             file_name = data.get('file_name')
 
-            maps = Map.objects.filter(worker=worker)
-            if not maps.filter(file_name=file_name).first():
-                Map.objects.create(
+            diagnostics = Diagnostic.objects.filter(worker=worker)
+            if not diagnostics.filter(file_name=file_name).first():
+                Diagnostic.objects.create(
                     worker=worker,
                     geojson=geojson,
                     diagnostic=diagnostic,
@@ -370,17 +370,17 @@ class GetListMapData(APIView):
         try:
             data = self.request.data
             worker = Worker.objects.filter(user__email=data.get('username')).first()
-            maps = Map.objects.filter(worker=worker).order_by(data.get('order_element'))
+            diagnostics = Diagnostic.objects.filter(worker=worker).order_by(data.get('order_element'))
             response = []
-            for map in maps:
+            for diagnostic in diagnostics:
                 response.append({
-                    'geojson': map.geojson,
-                    'diagnostic_label': MAPS_DIAGNOSTICS_2D_LABEL[map.diagnostic],
-                    'units_label': MAPS_UNITS_LABEL[map.unit],
-                    'polygons': map.polygons,
-                    'file_name': map.file_name,
-                    'diagnostic': map.diagnostic,
-                    'units': map.unit
+                    'geojson': diagnostic.geojson,
+                    'diagnostic_label': MAPS_DIAGNOSTICS_2D_LABEL[diagnostic.diagnostic],
+                    'units_label': MAPS_UNITS_LABEL[diagnostic.unit],
+                    'polygons': diagnostic.polygons,
+                    'file_name': diagnostic.file_name,
+                    'diagnostic': diagnostic.diagnostic,
+                    'units': diagnostic.unit
                 })
 
             return Response(response, status=status.HTTP_200_OK)
@@ -395,8 +395,8 @@ class DeleteMapData(APIView):
         try:
             data = self.request.data
             worker = Worker.objects.filter(user__email=data.get('username')).first()
-            map = Map.objects.filter(file_name=data.get('file_name'), worker=worker).first()
-            map.delete()
+            diagnostic = Diagnostic.objects.filter(file_name=data.get('file_name'), worker=worker).first()
+            diagnostic.delete()
             return Response({'success': 'Map data deleted'}, status=status.HTTP_200_OK)
         except:
             return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

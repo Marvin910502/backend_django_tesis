@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div>
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ worker.user.email }}</h3>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-floating mt-3">
+                            <input type="password" name="old_password" id="old_password_input" class="form-control" placeholder="">
+                            <label for="old_password_input">Contraseña Actual</label>
+                        </div>
+                        <div class="form-floating mt-5">
+                            <input type="password" name="password" id="password_input" class="form-control" placeholder="">
+                            <label for="password_input">Nueva Contraseña</label>
+                        </div>
+                        <div class="form-floating mt-5">
+                            <input type="password" name="last_names" id="re_password_input" class="form-control" placeholder="">
+                            <label for="re_password_input">Repetir Nueva Contraseña</label>
+                        </div>
+                        <input class="btn btn-primary mt-5" type="submit" name="change_password" value="Cambiar Contraseña">
+                    </div>
+                    <div class="col-6">
+                        <div class="form-floating mt-3">
+                            <input type="email" name="email" id="email_input" class="form-control" value="{{ worker.user.email }}" placeholder="">
+                            <label for="email_input">Correo</label>
+                        </div>
+                        <div class="form-floating mt-5">
+                            <input type="text" name="name" id="name_input" class="form-control" value="{{ worker.name }}" placeholder="">
+                            <label for="name_input">Nombre</label>
+                        </div>
+                        <div class="form-floating mt-5">
+                            <input type="text" name="last_names" id="last_names_input" class="form-control" value="{{ worker.last_names }}" placeholder="">
+                            <label for="last_names_input">Apellidos</label>
+                        </div>
+                        <div class="mt-3">
+                            <label for="department_selector">Departamento</label>
+                            <select id="department_selector" class="form-control mt-2" name="department">
+                                {% for department in departments %}
+                                    <option value="{{ department }}" {% if worker.department == department %} selected {% endif %}>{{ department }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mt-3">
+                            <input type="checkbox" class="form-check-input" id="input_is_guess" name="is_guess" {% if worker.isGuess %} checked {% endif %}>
+                            <label for="input_is_guess" class="form-check-label ms-2">Invitado</label>
+                            <input type="checkbox" class="form-check-input ms-5" id="input_is_guess" name="is_manager" {% if worker.isManager %} checked {% endif %}>
+                            <label for="input_is_guess" class="form-check-label ms-2">Gestor</label>
+                            <input type="checkbox" class="form-check-input ms-5" id="input_is_guess" name="is_admin" {% if worker.isAdmin %} checked {% endif %}>
+                            <label for="input_is_guess" class="form-check-label ms-2">Administrador</label>
+                        </div>
+                        <input class="btn btn-primary mt-5" type="submit" name="update_user" value="Actualizar Usuario">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 import environ
 from datetime import timedelta
+from django.urls import reverse_lazy
 
 env = environ.Env()
 environ.Env.read_env()
@@ -30,6 +31,9 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = [env("ALLOWED_HOSTS"), env("ALLOWED_HOSTS_2")]
+
+LOGIN_URL = reverse_lazy('login_admin')
+LOGOUT_URL = reverse_lazy('login_admin')
 
 # Application definition
 

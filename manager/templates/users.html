@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container">
+        <div class="card mt-3">
+            <div class="card-header flex-row">
+                <h3 class="float-start">Usuarios</h3>
+                <a class="btn btn-primary float-end" href="{% url 'manager_create_user' %}">Nuevo Usuario</a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                              <th scope="col">Correo</th>
+                              <th scope="col">Nombre Completo</th>
+                              <th scope="col">Departamento</th>
+                              <th scope="col" class="text-center">Administrar</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for worker in workers %}
+                            <tr>
+                              <th>{{ worker.user.email }}</th>
+                              <td>{{ worker.name }} {{ worker.last_names }}</td>
+                              <td>{{ worker.department }}</td>
+                              <td class="text-center">
+                                  <a href="{% url 'manager_edit_user' worker.uuid %}" class="me-2 text-decoration-none">
+                                      <i class="fa-regular fa-edit text-success"></i>
+                                  </a>
+                                  <a type="button" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#delete_user_modal-{{ worker.uuid }}">
+                                      <i class="fa-regular fa-trash text-danger"></i>
+                                  </a>
+                              </td>
+                            </tr>
+
+                            <!-- Modal -->
+                            <div class="modal fade" id="delete_user_modal-{{ worker.uuid }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticDeleteUserModal" aria-hidden="true">
+                              <div class="modal-dialog">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="delete_user_modal_label">Eliminar Usuario</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body">
+                                    <p>¿Está seguro que desea eliminar este usaurio?. Esta operación de irreversible</p>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <a type="button" class="btn btn-danger" href="{% url 'manager_delete_user' worker.uuid %}">Si, eliminar</a>
+                                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">No</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block custom_scripts %}{% endblock custom_scripts %}
