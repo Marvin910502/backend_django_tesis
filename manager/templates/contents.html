@@ -12,22 +12,44 @@
 
 {% block content %}
     <div class="ps-3 pe-3 mb-3">
-
-        <form method="post">
-            {% csrf_token %}
-             <div class="card p-3">
-                <textarea id="editor" class="ck-editor" name="text_editor">
-                    {{ text }}
-                </textarea>
-                <div class="form-group mt-3">
-                    <button class="btn btn-primary" type="submit">Guardar</button>
-                </div>
-             </div>
-        </form>
-
-        <div>
-            {{ text | safe }}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="float-start">Contenidos</h3>
+            <input class="btn btn-primary float-end" form="content_form" type="submit" name="home_text1" value="Guardar">
         </div>
+        <div class="card-body">
+            <form method="post" id="content_form">
+                {% csrf_token %}
+                <div class="form-group mt-3">
+                    <label class="mb-3" for="editor1">Contenido de la página de Inicio</label>
+                    <textarea id="editor1" class="ck-editor" name="home_content">
+                        {{ home_content }}
+                    </textarea>
+                </div>
+                <div class="form-group mt-5">
+                    <label class="mb-3" for="editor2">Texto de tarjeta de Diagnósticos</label>
+                    <textarea id="editor2" class="ck-editor" name="card_diagnostics">
+                        {{ card_diagnostics }}
+                    </textarea>
+                </div>
+                <div class="form-group mt-5">
+                    <label class="mb-3" for="editor3">Texto de tarjeta de Mis Diagnósticos</label>
+                    <textarea id="editor3" class="ck-editor" name="card_my_diagnostics">
+                        {{ card_my_diagnostics }}
+                    </textarea>
+                </div>
+                <div class="form-group mt-5 mb-3">
+                    <label class="mb-3" for="editor4">Contenido de la página de Ayuda</label>
+                    <textarea id="editor4" class="ck-editor" name="help_content">
+                        {{ help_content }}
+                    </textarea>
+                </div>
+            </form>
+        </div>
+        <div class="card-footer">
+            <input class="btn btn-primary float-end" form="content_form" type="submit" name="home_text1" value="Guardar">
+        </div>
+    </div>
 
     </div>
 
@@ -36,7 +58,25 @@
 {% block custom_scripts %}
     <script>
         ClassicEditor
-            .create(document.querySelector('#editor'))
+            .create(document.querySelector('#editor1'))
+            .then()
+            .catch( error => {
+                console.error( error );
+            } );
+        ClassicEditor
+            .create(document.querySelector('#editor2'))
+            .then()
+            .catch( error => {
+                console.error( error );
+            } );
+        ClassicEditor
+            .create(document.querySelector('#editor3'))
+            .then()
+            .catch( error => {
+                console.error( error );
+            } );
+        ClassicEditor
+            .create(document.querySelector('#editor4'))
             .then()
             .catch( error => {
                 console.error( error );

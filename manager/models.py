@@ -4,4 +4,11 @@ from django.db import models
 
 
 class Content(models.Model):
-    help_content = models.TextField()
+    site_title = models.TextField(blank=True)
+    icon = models.TextField(blank=True)
+    favicon = models.TextField(blank=True)
+    home_content = models.TextField(blank=True)
+    card_diagnostics = models.TextField(blank=True)
+    card_my_diagnostics = models.TextField(blank=True)
+    help_content = models.TextField(blank=True)
+

@@ -243,15 +243,27 @@ def manage_contents(request):
     data = amounts_data()
 
     content = Content.objects.first()
-    text = content.help_content
+    home_content = content.home_content
+    card_diagnostics = content.card_diagnostics
+    card_my_diagnostics = content.card_my_diagnostics
+    help_content = content.help_content
     if request.method == 'POST':
         request_post = request.POST
-        text = request_post.get('text_editor')
-        content.help_content = text
+        home_content = request_post.get('home_content')
+        card_diagnostics = request_post.get('card_diagnostics')
+        card_my_diagnostics = request_post.get('card_my_diagnostics')
+        help_content = request_post.get('help_content')
+        content.home_content = home_content
+        content.card_diagnostics = card_diagnostics
+        content.card_my_diagnostics = card_my_diagnostics
+        content.help_content = help_content
         content.save()
 
     context = {
-        'text': text,
+        'home_content': home_content,
+        'card_diagnostics': card_diagnostics,
+        'card_my_diagnostics': card_my_diagnostics,
+        'help_content': help_content,
         'users_amount': data.get('workers').__len__(),
         'diagnostics_amount': data.get('diagnostics').__len__(),
         'files_amount': data.get('files').__len__(),

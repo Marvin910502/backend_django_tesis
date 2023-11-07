@@ -14,6 +14,7 @@ from django.contrib.auth import authenticate
 from django.utils.text import slugify
 from api.models import WRFoutFileList
 from workers.models import Worker, Diagnostic
+from manager.models import Content
 from backend_django_tesis.settings import BASE_DIR
 
 # WRF processing libraries
@@ -401,3 +402,21 @@ class DeleteMapData(APIView):
         except:
             return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+# Contents endpoint ----------------------------------------------------------------------------------------------------
+
+class GetContent(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request):
+        try:
+            content = Content.objects.first()
+            response = {
+                'home_content': content.home_content,
+                'card_diagnostics': content.card_diagnostics,
+                'card_my_diagnostics': content.card_my_diagnostics,
+                'help_content': content.help_content
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        except:
+            return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
