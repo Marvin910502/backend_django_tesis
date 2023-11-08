@@ -32,11 +32,27 @@ def amounts_data():
     workers = Worker.objects.all()
     diagnostics = Diagnostic.objects.all()
     files = WRFoutFileList.objects.all()
+    content = Content.objects.first()
+    used_space = 0
+
+    for file in files:
+        used_space = + file.size
+
+    used_space = round(used_space / 1000, 2)
+    free_space = 100 - (used_space*100/content.server_space)
+
+    low_space = False
+
+    if free_space < 10:
+        low_space = True
 
     data = {
         'workers': workers,
         'diagnostics': diagnostics,
-        'files': files
+        'files': files,
+        'used_space': used_space,
+        'content': content,
+        'low_space': low_space
     }
     return data
 
@@ -86,8 +102,9 @@ def manage_users(request):
         'users_amount': data.get('workers').__len__(),
         'diagnostics_amount': data.get('diagnostics').__len__(),
         'files_amount': data.get('files').__len__(),
-        'storage_space': 500,
-        'storage_used': 45,
+        'storage_space': data.get('content').server_space,
+        'storage_used': data.get('used_space'),
+        'low_space': data.get('low_space'),
         'message': message,
         'class_alert': class_alert
     }
@@ -149,8 +166,9 @@ def manage_edit_user(request, uuid):
         'users_amount': data.get('workers').__len__(),
         'diagnostics_amount': data.get('diagnostics').__len__(),
         'files_amount': data.get('files').__len__(),
-        'storage_space': 500,
-        'storage_used': 45,
+        'storage_space': data.get('content').server_space,
+        'storage_used': data.get('used_space'),
+        'low_space': data.get('low_space'),
         'message': message,
         'class_alert': class_alert
     }
@@ -218,8 +236,9 @@ def manage_create_user(request):
         'users_amount': data.get('workers').__len__(),
         'diagnostics_amount': data.get('diagnostics').__len__(),
         'files_amount': data.get('files').__len__(),
-        'storage_space': 500,
-        'storage_used': 45,
+        'storage_space': data.get('content').server_space,
+        'storage_used': data.get('used_space'),
+        'low_space': data.get('low_space'),
         'message': message,
         'class_alert': class_alert
     }
@@ -267,9 +286,38 @@ def manage_contents(request):
         'users_amount': data.get('workers').__len__(),
         'diagnostics_amount': data.get('diagnostics').__len__(),
         'files_amount': data.get('files').__len__(),
-        'storage_space': 500,
-        'storage_used': 45,
+        'storage_space': data.get('content').server_space,
+        'storage_used': data.get('used_space'),
+        'low_space': data.get('low_space'),
         'message': message,
         'class_alert': class_alert
     }
     return render(request, 'contents.html', context)
+
+
+@login_required(login_url=LOGIN_URL)
+def manage_configurations(request):
+    message, class_alert = check_session_message(request)
+    data = amounts_data()
+
+    content = data.get('content')
+    server_space = content.server_space
+
+    if request.method == 'POST':
+        request_post = request.POST
+        content.server_space = request_post.get('server_space')
+        content.save()
+        server_space = request_post.get('server_space')
+
+    context = {
+        'server_space': server_space,
+        'users_amount': data.get('workers').__len__(),
+        'diagnostics_amount': data.get('diagnostics').__len__(),
+        'files_amount': data.get('files').__len__(),
+        'storage_space': data.get('content').server_space,
+        'storage_used': data.get('used_space'),
+        'low_space': data.get('low_space'),
+        'message': message,
+        'class_alert': class_alert
+    }
+    return render(request, 'configurations.html', context)

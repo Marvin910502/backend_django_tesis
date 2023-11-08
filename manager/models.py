@@ -11,4 +11,5 @@ class Content(models.Model):
     card_diagnostics = models.TextField(blank=True)
     card_my_diagnostics = models.TextField(blank=True)
     help_content = models.TextField(blank=True)
+    server_space = models.FloatField(default=0)
 

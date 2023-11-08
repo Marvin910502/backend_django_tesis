@@ -8,8 +8,6 @@
     <link href="{% static 'fontawesome/css/fontawesome.css' %}" rel="stylesheet">
     <link href="{% static 'fontawesome/css/brands.css' %}" rel="stylesheet">
     <link href="{% static 'fontawesome/css/solid.css' %}" rel="stylesheet">
-{#    <link href="{% static 'ckeditor5-build-classic-40.0.0/ckeditor5-build-classic/sample/css/content.css' %}" type="text/css" rel="stylesheet">#}
-{#    <link href="{% static 'ckeditor5-build-classic-40.0.0/ckeditor5-build-classic/sample/css/editor.css' %}" type="text/css" rel="stylesheet">#}
     <title title="CFA-WRF-Admin">WRF-Admin</title>
     <link rel="icon" type="image/x-icon" href="{% static 'icons/cfa_logo_dark.png' %}">
     <script type="text/javascript" src="{% static 'ckeditor5-40.0.0-aohy8a9omyu6/build/ckeditor.js' %}"></script>
@@ -35,9 +33,12 @@
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page" href="{% url 'manager_contents' %}">Contenidos</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{% url 'manager_configuration' %}">Configuraciones</a>
+                    </li>
                 </ul>
             </div>
-            <a class="btn btn-outline-primary me-3" href="{% url 'logout_admin' %}">Salir</a>
+            <a class="btn btn-outline-danger me-3" href="{% url 'logout_admin' %}"><i class="fa fa-sign-out me-2"></i>Salir</a>
             {% endif %}
             <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" role="switch" id="theme_selector" onclick="ThemeSelector()" checked>
@@ -67,7 +68,7 @@
             </div>
             <div class="col-5">
                 <div class="card p-3 flex-row align-items-center justify-content-center">
-                    <i class="fa-regular fa-hard-drive me-3 fa-2x" title="Espacio utilizado en el servidor"><span class="text-success ms-2">{{ storage_used }} / {{ storage_space }} GB</span></i>
+                    <i class="fa-regular fa-hard-drive me-3 fa-2x"  title="Espacio utilizado en el servidor"><span {% if low_space %} class="text-danger ms-2" {% else %} class="text-success ms-2" {% endif %}>{{ storage_used }} / {{ storage_space }} GB</span></i>
                 </div>
             </div>
         </div>

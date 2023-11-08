@@ -14,6 +14,7 @@
                         <thead>
                             <tr>
                               <th scope="col">Correo</th>
+                              <th scope="col">Permisos</th>
                               <th scope="col">Nombre Completo</th>
                               <th scope="col">Departamento</th>
                               <th scope="col" class="text-center">Administrar</th>
@@ -23,6 +24,7 @@
                             {% for worker in workers %}
                             <tr>
                               <th>{{ worker.user.email }}</th>
+                              <th>{% if worker.isGuess %}<span class="badge rounded-pill text-bg-primary ms-1">Invitado</span>{% endif %}{% if worker.isManager %}<span class="badge rounded-pill text-bg-secondary ms-1">Gestor</span>{% endif %}{% if worker.isAdmin %}<span class="badge rounded-pill text-bg-success ms-1"> Administrador</span>{% endif %}</th>
                               <td>{{ worker.name }} {{ worker.last_names }}</td>
                               <td>{{ worker.department }}</td>
                               <td class="text-center">
