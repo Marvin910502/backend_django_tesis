@@ -12,7 +12,9 @@ from api.endpoints import (
                            CrossSections,
                            UpdateUser,
                            ChangePasswd,
-                           GetContent
+                           GetContent,
+                           UploadProfileImage,
+                           GetProfileImage,
                           )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -28,6 +30,8 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('get-user/', GetUserData.as_view(), name='get_user'),
     path('update-user/', UpdateUser.as_view(), name='update_user'),
+    path('upload-profile-image/', UploadProfileImage.as_view(), name='upload_profile_image'),
+    path('media/get-profile-image/<str:filename>', GetProfileImage.as_view(), name='get_profile_image'),
     path('change-passwd/', ChangePasswd.as_view(), name='change_passwd'),
     # Plot data endpoints
     path('2d-variables-maps/', TwoDimensionsVariablesMaps.as_view(), name='2d_variables_maps'),

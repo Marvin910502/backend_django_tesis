@@ -133,6 +133,7 @@ STATICFILES_DIRS = (
 )
 
 STATIC_URL = '/static/'
+MEDIA_PROFILES_URL = f'{BASE_DIR}/static/profile_images/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -157,6 +158,7 @@ CORS_ALLOW_HEADERS = (
     "authorization",
     "content-type",
     "Authorization",
+    "username",
 )
 
 CORS_ALLOW_CREDENTIALS = True

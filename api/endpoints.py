@@ -1,6 +1,7 @@
 # Python libraries
 import json
 import os
+import uuid
 from builtins import max, min
 
 # Rest Framework
@@ -11,11 +12,12 @@ from rest_framework import permissions, status
 # Django
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from django.http import HttpResponse
 from django.utils.text import slugify
 from api.models import WRFoutFileList
 from workers.models import Worker, Diagnostic
 from manager.models import Content
-from backend_django_tesis.settings import BASE_DIR
+from backend_django_tesis.settings import BASE_DIR, MEDIA_PROFILES_URL
 
 # WRF processing libraries
 from netCDF4 import Dataset
@@ -47,7 +49,8 @@ class GetUserData(APIView):
                 'department': worker.department,
                 'isAdmin': worker.isAdmin,
                 'isGuess': worker.isGuess,
-                'isManager': worker.isManager
+                'isManager': worker.isManager,
+                'profile_image': worker.profile_image.name if worker.profile_image else ''
             }
 
             return Response(response, status=status.HTTP_200_OK)
@@ -85,6 +88,47 @@ class RegisterView(APIView):
                 )
 
                 return Response({"success": "User create successfully"}, status=status.HTTP_201_CREATED)
+        except:
+            return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UploadProfileImage(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        try:
+            data = self.request.data
+            user = User.objects.filter(username=data.get('username')).first()
+            worker = Worker.objects.filter(user=user).first()
+            file = data.get('file')
+            file.name = uuid.uuid4().__str__()
+
+            try:
+                os.remove(f"{MEDIA_PROFILES_URL}/{worker.image_name}")
+            except:
+                worker.image_name = ''
+
+            worker.profile_image = file
+            worker.image_name = file.name
+            worker.save()
+
+            return Response({"success": "Profile image updated", "profile_image": worker.image_name}, status=status.HTTP_201_CREATED)
+        except:
+            return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class GetProfileImage(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request, filename):
+        try:
+            image_path = os.path.join(MEDIA_PROFILES_URL, filename)
+            try:
+                with open(image_path, 'rb') as img:
+                    return HttpResponse(img.read(), content_type='image/jpg')
+            except:
+                with open(f'{MEDIA_PROFILES_URL}/default.png', 'rb') as img:
+                    return HttpResponse(img.read(), content_type='image/svg')
         except:
             return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -301,20 +345,24 @@ class SaveFile(APIView):
         try:
             data = self.request.data
             file = data.get('file')
-            wrf_data = WRFoutFileList.objects.create(
-                name=file.name.replace(' ', '_').replace('(', '').replace(')', '').replace('[', '').replace(']', ''),
-                path_file=file,
-                size=round(file.size/1000000, 2)
-            )
+            file_name = file.name.replace(' ', '_').replace('(', '').replace(')', '').replace('[', '').replace(']', '')
+            if not WRFoutFileList.objects.filter(name=file_name).first():
+                wrf_data = WRFoutFileList.objects.create(
+                    name=file_name,
+                    path_file=file,
+                    size=round(file.size/1000000, 2)
+                )
 
-            try:
-                Dataset(wrf_data.path_file.path)
-            except:
-                os.remove(f"{BASE_DIR}/wrfout_files/{wrf_data.name}")
-                wrf_data.delete()
-                return Response({'error': 'This type of file is not compatible'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+                try:
+                    Dataset(wrf_data.path_file.path)
+                except:
+                    os.remove(f"{BASE_DIR}/wrfout_files/{wrf_data.name}")
+                    wrf_data.delete()
+                    return Response({'error': 'This type of file is not compatible'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-            return Response({'success': 'The was uploaded'}, status=status.HTTP_201_CREATED)
+                return Response({'success': 'The was uploaded'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'warning:' 'This file already exist'}, status=status.HTTP_208_ALREADY_REPORTED)
         except:
             return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
