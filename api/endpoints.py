@@ -50,7 +50,7 @@ class GetUserData(APIView):
                 'isAdmin': worker.isAdmin,
                 'isGuess': worker.isGuess,
                 'isManager': worker.isManager,
-                'profile_image': worker.profile_image.name if worker.profile_image else ''
+                'profile_image': worker.image_name
             }
 
             return Response(response, status=status.HTTP_200_OK)

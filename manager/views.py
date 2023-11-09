@@ -1,7 +1,10 @@
+import os
+import uuid
+
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
-from backend_django_tesis.settings import LOGIN_URL
+from backend_django_tesis.settings import LOGIN_URL, MEDIA_PROFILES_URL, MEDIA_ICONS_URL, MEDIA_IMAGES_URL
 
 from workers.models import Worker, Diagnostic
 from api.models import WRFoutFileList
@@ -301,16 +304,61 @@ def manage_configurations(request):
     data = amounts_data()
 
     content = data.get('content')
+    site_title = content.site_title
     server_space = content.server_space
 
     if request.method == 'POST':
         request_post = request.POST
-        content.server_space = request_post.get('server_space')
-        content.save()
+        request_file = request.FILES
+        site_title = request_post.get('site_title')
         server_space = request_post.get('server_space')
+        icon = request_file.get('icon')
+        favicon = request_file.get('favicon')
+        home_top_image = request_file.get('home_top_image')
+        card_diagnostics_image = request_file.get('card_diagnostics_image')
+        card_my_diagnostics_image = request_file.get('card_my_diagnostics_image')
+        content.server_space = server_space
+        content.site_title = site_title
+        if icon:
+            if content.icon_name:
+                os.remove(f"{MEDIA_ICONS_URL}/{content.icon_name}")
+            icon.name = uuid.uuid4().__str__()
+            content.icon = icon
+            content.icon_name = icon.name
+        if favicon:
+            if content.favicon_name:
+                os.remove(f"{MEDIA_ICONS_URL}/{content.favicon_name}")
+            favicon.name = uuid.uuid4().__str__()
+            content.favicon = favicon
+            content.favicon_name = favicon.name
+        if home_top_image:
+            if content.home_top_image_name:
+                os.remove(f"{MEDIA_IMAGES_URL}/{content.home_top_image_name}")
+            home_top_image.name = uuid.uuid4().__str__()
+            content.home_top_image = home_top_image
+            content.home_top_image_name = home_top_image.name
+        if card_diagnostics_image:
+            if content.card_diagnostics_image_name:
+                os.remove(f"{MEDIA_IMAGES_URL}/{content.card_diagnostics_image_name}")
+            card_diagnostics_image.name = uuid.uuid4().__str__()
+            content.card_diagnostics_image = card_diagnostics_image
+            content.card_diagnostics_image_name = card_diagnostics_image.name
+        if card_my_diagnostics_image:
+            if content.card_my_diagnostics_image_name:
+                os.remove(f"{MEDIA_IMAGES_URL}/{content.card_my_diagnostics_image_name}")
+            card_my_diagnostics_image.name = uuid.uuid4().__str__()
+            content.card_my_diagnostics_image = card_my_diagnostics_image
+            content.card_my_diagnostics_image_name = card_my_diagnostics_image.name
+        content.save()
 
     context = {
         'server_space': server_space,
+        'site_title': site_title,
+        'icon': content.icon.url if content.icon else '',
+        'favicon': content.favicon.url if content.favicon else '',
+        'home_top_image': content.home_top_image.url if content.home_top_image else '',
+        'card_diagnostics_image': content.card_diagnostics_image.url if content.card_diagnostics_image else '',
+        'card_my_diagnostics_image': content.card_my_diagnostics_image.url if content.card_my_diagnostics_image else '',
         'users_amount': data.get('workers').__len__(),
         'diagnostics_amount': data.get('diagnostics').__len__(),
         'files_amount': data.get('files').__len__(),
