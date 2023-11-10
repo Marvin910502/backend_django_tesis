@@ -36,12 +36,8 @@ def amounts_data():
     diagnostics = Diagnostic.objects.all()
     files = WRFoutFileList.objects.all()
     content = Content.objects.first()
-    used_space = 0
 
-    for file in files:
-        used_space = + file.size
-
-    used_space = round(used_space / 1000, 2)
+    used_space = WRFoutFileList.get_used_space()
     free_space = 100 - (used_space*100/content.server_space)
 
     low_space = False
@@ -304,7 +300,6 @@ def manage_contents(request):
 def manage_configurations(request):
     message, class_alert = check_session_message(request)
     data = amounts_data()
-
     content = data.get('content')
     site_title = content.site_title
     server_space = content.server_space
@@ -352,6 +347,7 @@ def manage_configurations(request):
             content.card_my_diagnostics_image = card_my_diagnostics_image
             content.card_my_diagnostics_image_name = card_my_diagnostics_image.name
         content.save()
+        data = amounts_data()
 
     context = {
         'server_space': server_space,

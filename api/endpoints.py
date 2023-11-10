@@ -347,23 +347,30 @@ class SaveFile(APIView):
             data = self.request.data
             file = data.get('file')
             file_name = file.name.replace(' ', '_').replace('(', '').replace(')', '').replace('[', '').replace(']', '')
-            if not WRFoutFileList.objects.filter(name=file_name).first():
-                wrf_data = WRFoutFileList.objects.create(
-                    name=file_name,
-                    path_file=file,
-                    size=round(file.size/1000000, 2)
-                )
+            content = Content.objects.first()
 
-                try:
-                    Dataset(wrf_data.path_file.path)
-                except:
-                    os.remove(f"{BASE_DIR}/wrfout_files/{wrf_data.name}")
-                    wrf_data.delete()
-                    return Response({'error': 'This type of file is not compatible'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+            valid_space = (content.server_space - WRFoutFileList.get_used_space()) - round(file.size/1000000000, 2)
 
-                return Response({'success': 'The was uploaded'}, status=status.HTTP_201_CREATED)
+            if valid_space >= 0:
+                if not WRFoutFileList.objects.filter(name=file_name).first():
+                    wrf_data = WRFoutFileList.objects.create(
+                        name=file_name,
+                        path_file=file,
+                        size=round(file.size/1000000, 2)
+                    )
+
+                    try:
+                        Dataset(wrf_data.path_file.path)
+                    except:
+                        os.remove(f"{BASE_DIR}/wrfout_files/{wrf_data.name}")
+                        wrf_data.delete()
+                        return Response({'error': 'This type of file is not compatible'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+                    return Response({'success': 'The was uploaded'}, status=status.HTTP_201_CREATED)
+                else:
+                    return Response({'warning:' 'This file already exist'}, status=status.HTTP_208_ALREADY_REPORTED)
             else:
-                return Response({'warning:' 'This file already exist'}, status=status.HTTP_208_ALREADY_REPORTED)
+                return Response({'error': 'There is no space on the server'}, status=status.HTTP_507_INSUFFICIENT_STORAGE)
         except:
             return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -463,6 +470,7 @@ class GetContent(APIView):
             response = {
                 'site_title': content.site_title,
                 'server_space': content.server_space,
+                'used_space': WRFoutFileList.get_used_space(),
                 'icon': content.icon_name,
                 'favicon': content.favicon_name,
                 'home_image': content.home_top_image_name,
