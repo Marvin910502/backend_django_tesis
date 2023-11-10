@@ -17,7 +17,7 @@ from django.utils.text import slugify
 from api.models import WRFoutFileList
 from workers.models import Worker, Diagnostic
 from manager.models import Content
-from backend_django_tesis.settings import BASE_DIR, MEDIA_PROFILES_URL
+from backend_django_tesis.settings import BASE_DIR, MEDIA_PROFILES_URL, MEDIA_ICONS_URL, MEDIA_IMAGES_URL
 
 # WRF processing libraries
 from netCDF4 import Dataset
@@ -242,6 +242,7 @@ class TwoDimensionsVariablesMaps(APIView):
             ax = figure.add_subplot(111)
             lvl = np.around(np.arange(minimum, maximum + extra_max, intervals), 4)
             contourf = ax.contourf(lons, lats, diag, levels=lvl, cmap=plt.cm.jet)
+            plt.close('all')
 
             geojson = geojsoncontour.contourf_to_geojson(
                 contourf=contourf,
@@ -460,6 +461,13 @@ class GetContent(APIView):
         try:
             content = Content.objects.first()
             response = {
+                'site_title': content.site_title,
+                'server_space': content.server_space,
+                'icon': content.icon_name,
+                'favicon': content.favicon_name,
+                'home_image': content.home_top_image_name,
+                'card_diagnostics_image': content.card_diagnostics_image_name,
+                'card_my_diagnostics_image': content.card_my_diagnostics_image_name,
                 'home_content': content.home_content,
                 'card_diagnostics': content.card_diagnostics,
                 'card_my_diagnostics': content.card_my_diagnostics,
@@ -468,3 +476,35 @@ class GetContent(APIView):
             return Response(response, status=status.HTTP_200_OK)
         except:
             return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class GetIcon(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request, filename):
+        try:
+            image_path = os.path.join(MEDIA_ICONS_URL, filename)
+            try:
+                with open(image_path, 'rb') as img:
+                    return HttpResponse(img.read(), content_type='image/jpg')
+            except:
+                with open(f'{MEDIA_ICONS_URL}/default.png', 'rb') as img:
+                    return HttpResponse(img.read(), content_type='image/svg')
+        except:
+            return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class GetImage(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request, filename):
+        try:
+            image_path = os.path.join(MEDIA_IMAGES_URL, filename)
+            try:
+                with open(image_path, 'rb') as img:
+                    return HttpResponse(img.read(), content_type='image/jpg')
+            except:
+                with open(f'{MEDIA_IMAGES_URL}/default.png', 'rb') as img:
+                    return HttpResponse(img.read(), content_type='image/svg')
+        except:
+            return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

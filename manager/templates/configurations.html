@@ -3,7 +3,7 @@
 
 
 {% block content %}
-    <div class="ps-3 pe-3">
+    <div class="ps-3 pe-3 mb-5">
         <div class="card mt-3">
             <div class="card-header">
                 <h3>Configuraciones</h3>
@@ -25,15 +25,29 @@
                         <div class="col-4 ps-5 pe-5">
                             <div class="form-group">
                                 <label class="form-label mb-2" for="input_icon">Icono del Sitio</label><br>
-                                <img src="{{ icon | safe }}" class="mb-2" style="max-height:86px" alt="">
-                                <input class="form-control" type="file" id="input_icon" name="icon">
+                                <img src="{{ icon | safe }}" class="mb-2 me-2" style="max-height:86px" alt="">
+                                <div class="row">
+                                    <div class="col-10">
+                                        <input class="form-control" type="file" id="input_icon" name="icon">
+                                    </div>
+                                    <div class="col-2 pt-1">
+                                        <a class="text-danger" href="{% url 'delete_images_site' 'icon' %}"><i class="fa fa-trash"></i></a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="col-4 ps-5 pe-5">
                             <div class="form-group">
                                 <label class="form-label mb-2" for="input_favicon">Icono de Pestaña del Sitio</label><br>
                                 <img src="{{ favicon | safe }}" class="mb-2" style="max-height:86px" alt="">
-                                <input class="form-control" type="file" id="input_favicon" name="favicon">
+                                <div class="row">
+                                    <div class="col-10">
+                                        <input class="form-control" type="file" id="input_favicon" name="favicon">
+                                    </div>
+                                    <div class="col-2 pt-1">
+                                        <a class="text-danger" href="{% url 'delete_images_site' 'favicon' %}"><i class="fa fa-trash"></i></a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -41,23 +55,44 @@
                     <div class="row mt-5 mb-5">
                         <div class="col-4 ps-5 pe-5">
                             <div class="form-group">
-                                <label class="form-label mb-2" for="input_icon">Imagen superior del Inicio</label><br>
+                                <label class="form-label mb-2" for="input_home_top_image">Imagen superior del Inicio</label><br>
                                 <img src="{{ home_top_image | safe }}" class="mb-2" style="max-height:200px" alt="">
-                                <input class="form-control" type="file" id="input_ome_top_image" name="home_top_image">
+                                <div class="row">
+                                    <div class="col-10">
+                                        <input class="form-control" type="file" id="input_home_top_image" name="home_top_image">
+                                    </div>
+                                    <div class="col-2 pt-1">
+                                        <a class="text-danger" href="{% url 'delete_images_site' 'home_image' %}"><i class="fa fa-trash"></i></a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="col-4 ps-5 pe-5">
                             <div class="form-group">
                                 <label class="form-label mb-2" for="input_card_diagnostics_image">Imagen Tarjeta de Diagnósticos</label><br>
                                 <img src="{{ card_diagnostics_image | safe }}" class="mb-2" style="max-height:200px" alt="">
-                                <input class="form-control" type="file" id="input_card_diagnostics_image" name="card_diagnostics_image">
+                                <div class="row">
+                                    <div class="col-10">
+                                        <input class="form-control" type="file" id="input_card_diagnostics_image" name="card_diagnostics_image">
+                                    </div>
+                                    <div class="col-2 pt-1">
+                                        <a class="text-danger" href="{% url 'delete_images_site' 'card_diagnostics' %}"><i class="fa fa-trash"></i></a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="col-4 ps-5 pe-5">
                             <div class="form-group">
                                 <label class="form-label mb-2" for="input_card_my_diagnostics_image">Imagen Tarjeta de Mis Diagnósticos</label><br>
                                 <img src="{{ card_my_diagnostics_image | safe }}" class="mb-2" style="max-height:200px" alt="">
-                                <input class="form-control" type="file" id="input_card_my_diagnostics_image" name="card_my_diagnostics_image">
+                                <div class="row">
+                                    <div class="col-10">
+                                        <input class="form-control" type="file" id="input_card_my_diagnostics_image" name="card_my_diagnostics_image">
+                                    </div>
+                                    <div class="col-2 pt-1">
+                                        <a class="text-danger" href="{% url 'delete_images_site' 'card_my_diagnostics' %}"><i class="fa fa-trash"></i></a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

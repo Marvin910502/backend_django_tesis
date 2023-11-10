@@ -10,5 +10,6 @@ urlpatterns = [
     path('crear-usuario/', views.manage_create_user, name='manager_create_user'),
     path('eliminar-usuario/<str:uuid>/', views.manage_delete_user, name='manager_delete_user'),
     path('contenidos/', views.manage_contents, name='manager_contents'),
-    path('configuraciones', views.manage_configurations, name='manager_configuration')
+    path('configuraciones', views.manage_configurations, name='manager_configuration'),
+    path('delete-images-site/<str:image>/', views.delete_image_site, name='delete_images_site')
 ]

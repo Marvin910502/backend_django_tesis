@@ -5,6 +5,7 @@ from django.db import models
 
 class Content(models.Model):
     site_title = models.TextField(blank=True)
+    server_space = models.FloatField(default=0)
     icon = models.FileField(upload_to="static/icons/", blank=True, null=True)
     icon_name = models.CharField(max_length=200, blank=True, null=True)
     favicon = models.FileField(upload_to="static/icons/", blank=True, null=True)
@@ -19,5 +20,5 @@ class Content(models.Model):
     card_diagnostics = models.TextField(blank=True)
     card_my_diagnostics = models.TextField(blank=True)
     help_content = models.TextField(blank=True)
-    server_space = models.FloatField(default=0)
+
 

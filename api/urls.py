@@ -15,6 +15,8 @@ from api.endpoints import (
                            GetContent,
                            UploadProfileImage,
                            GetProfileImage,
+                           GetIcon,
+                           GetImage,
                           )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -45,5 +47,7 @@ urlpatterns = [
     path('get-list-map-data/', GetListMapData.as_view(), name='get_list_map_data'),
     path('delete-map-data/', DeleteMapData.as_view(), name='delete_map_data'),
     # Content data endpoints
-    path('get-content/', GetContent.as_view(), name='get_content')
+    path('get-content/', GetContent.as_view(), name='get_content'),
+    path('media/get-icon/<str:filename>', GetIcon.as_view(), name='get-icon'),
+    path('media/get-image/<str:filename>', GetImage.as_view(), name='get-image')
 ]

@@ -252,6 +252,8 @@ def manage_create_user(request):
 def manage_delete_user(request, uuid):
     worker = Worker.objects.filter(uuid=uuid).first()
     user = User.objects.filter(username=worker.user).first()
+    if worker.image_name:
+        os.remove(f"{MEDIA_PROFILES_URL}/{worker.image_name}")
     user.delete()
     worker.delete()
     request.session['message'] = 'El usuario ha sido eliminado con éxito'
@@ -369,3 +371,36 @@ def manage_configurations(request):
         'class_alert': class_alert
     }
     return render(request, 'configurations.html', context)
+
+
+@login_required(login_url=LOGIN_URL)
+def delete_image_site(request, image):
+    content = Content.objects.first()
+
+    if image == 'icon':
+        os.remove(f"{MEDIA_ICONS_URL}/{content.icon_name}")
+        content.icon_name = ''
+        content.icon = ''
+        content.save()
+    if image == 'favicon':
+        os.remove(f"{MEDIA_ICONS_URL}/{content.favicon_name}")
+        content.favicon_name = ''
+        content.favicon = ''
+        content.save()
+    if image == 'home_image':
+        os.remove(f"{MEDIA_IMAGES_URL}/{content.home_top_image_name}")
+        content.home_top_image_name = ''
+        content.home_top_image = ''
+        content.save()
+    if image == 'card_diagnostics':
+        os.remove(f"{MEDIA_IMAGES_URL}/{content.card_diagnostics_image_name}")
+        content.card_diagnostics_image_name = ''
+        content.card_diagnostics_image = ''
+        content.save()
+    if image == 'card_my_diagnostics':
+        os.remove(f"{MEDIA_IMAGES_URL}/{content.card_my_diagnostics_image_name}")
+        content.card_my_diagnostics_image_name = ''
+        content.card_my_diagnostics_image = ''
+        content.save()
+
+    return redirect('manager_configuration')
