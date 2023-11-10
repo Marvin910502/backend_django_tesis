@@ -1,11 +1,7 @@
-import base64
 import os
-import uuid
-
 
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils.text import slugify
 from backend_django_tesis.settings import BASE_DIR
 
 
@@ -34,3 +30,12 @@ class WRFoutFileList(models.Model):
             for root, dirs, files in os.walk(f"{BASE_DIR}/wrfout_files/"):
                 if not file.name in files:
                     file.delete()
+
+    @classmethod
+    def get_used_space(cls):
+        used_space = 0
+        for file in cls.objects.all():
+            used_space = + file.size
+
+        used_space = round(used_space / 1000, 2)
+        return used_space
