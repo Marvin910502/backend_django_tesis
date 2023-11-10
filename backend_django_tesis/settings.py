@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 import environ
 from datetime import timedelta
+from django.urls import reverse_lazy
 
 env = environ.Env()
 environ.Env.read_env()
@@ -31,6 +32,9 @@ DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = [env("ALLOWED_HOSTS"), env("ALLOWED_HOSTS_2")]
 
+LOGIN_URL = reverse_lazy('login_admin')
+LOGOUT_URL = reverse_lazy('login_admin')
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -40,8 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'wrf_app',
     'api',
+    'manager',
     'workers',
     'rest_framework',
     'rest_framework_simplejwt',
@@ -129,6 +133,9 @@ STATICFILES_DIRS = (
 )
 
 STATIC_URL = '/static/'
+MEDIA_PROFILES_URL = f'{BASE_DIR}/static/profile_images/'
+MEDIA_ICONS_URL = f'{BASE_DIR}/static/icons/'
+MEDIA_IMAGES_URL = f'{BASE_DIR}/static/images/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -153,6 +160,7 @@ CORS_ALLOW_HEADERS = (
     "authorization",
     "content-type",
     "Authorization",
+    "username",
 )
 
 CORS_ALLOW_CREDENTIALS = True

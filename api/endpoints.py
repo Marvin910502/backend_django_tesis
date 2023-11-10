@@ -1,6 +1,7 @@
 # Python libraries
 import json
 import os
+import uuid
 from builtins import max, min
 
 # Rest Framework
@@ -11,10 +12,12 @@ from rest_framework import permissions, status
 # Django
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from django.http import HttpResponse
 from django.utils.text import slugify
 from api.models import WRFoutFileList
-from workers.models import Worker, Map
-from backend_django_tesis.settings import BASE_DIR
+from workers.models import Worker, Diagnostic
+from manager.models import Content
+from backend_django_tesis.settings import BASE_DIR, MEDIA_PROFILES_URL, MEDIA_ICONS_URL, MEDIA_IMAGES_URL
 
 # WRF processing libraries
 from netCDF4 import Dataset
@@ -46,7 +49,8 @@ class GetUserData(APIView):
                 'department': worker.department,
                 'isAdmin': worker.isAdmin,
                 'isGuess': worker.isGuess,
-                'isManager': worker.isManager
+                'isManager': worker.isManager,
+                'profile_image': worker.image_name
             }
 
             return Response(response, status=status.HTTP_200_OK)
@@ -84,6 +88,47 @@ class RegisterView(APIView):
                 )
 
                 return Response({"success": "User create successfully"}, status=status.HTTP_201_CREATED)
+        except:
+            return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UploadProfileImage(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        try:
+            data = self.request.data
+            user = User.objects.filter(username=data.get('username')).first()
+            worker = Worker.objects.filter(user=user).first()
+            file = data.get('file')
+            file.name = uuid.uuid4().__str__()
+
+            try:
+                os.remove(f"{MEDIA_PROFILES_URL}/{worker.image_name}")
+            except:
+                worker.image_name = ''
+
+            worker.profile_image = file
+            worker.image_name = file.name
+            worker.save()
+
+            return Response({"success": "Profile image updated", "profile_image": worker.image_name}, status=status.HTTP_201_CREATED)
+        except:
+            return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class GetProfileImage(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request, filename):
+        try:
+            image_path = os.path.join(MEDIA_PROFILES_URL, filename)
+            try:
+                with open(image_path, 'rb') as img:
+                    return HttpResponse(img.read(), content_type='image/jpg')
+            except:
+                with open(f'{MEDIA_PROFILES_URL}/default.png', 'rb') as img:
+                    return HttpResponse(img.read(), content_type='image/svg')
         except:
             return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -197,6 +242,7 @@ class TwoDimensionsVariablesMaps(APIView):
             ax = figure.add_subplot(111)
             lvl = np.around(np.arange(minimum, maximum + extra_max, intervals), 4)
             contourf = ax.contourf(lons, lats, diag, levels=lvl, cmap=plt.cm.jet)
+            plt.close('all')
 
             geojson = geojsoncontour.contourf_to_geojson(
                 contourf=contourf,
@@ -300,20 +346,24 @@ class SaveFile(APIView):
         try:
             data = self.request.data
             file = data.get('file')
-            wrf_data = WRFoutFileList.objects.create(
-                name=file.name.replace(' ', '_').replace('(', '').replace(')', '').replace('[', '').replace(']', ''),
-                path_file=file,
-                size=round(file.size/1000000, 2)
-            )
+            file_name = file.name.replace(' ', '_').replace('(', '').replace(')', '').replace('[', '').replace(']', '')
+            if not WRFoutFileList.objects.filter(name=file_name).first():
+                wrf_data = WRFoutFileList.objects.create(
+                    name=file_name,
+                    path_file=file,
+                    size=round(file.size/1000000, 2)
+                )
 
-            try:
-                wrfout = Dataset(wrf_data.path_file.path)
-            except:
-                os.remove(f"{BASE_DIR}/wrfout_files/{wrf_data.name}")
-                wrf_data.delete()
-                return Response({'error': 'This type of file is not compatible'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+                try:
+                    Dataset(wrf_data.path_file.path)
+                except:
+                    os.remove(f"{BASE_DIR}/wrfout_files/{wrf_data.name}")
+                    wrf_data.delete()
+                    return Response({'error': 'This type of file is not compatible'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-            return Response({'success': 'The was uploaded'}, status=status.HTTP_201_CREATED)
+                return Response({'success': 'The was uploaded'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'warning:' 'This file already exist'}, status=status.HTTP_208_ALREADY_REPORTED)
         except:
             return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -346,9 +396,9 @@ class SaveMapData(APIView):
             polygons = data.get('polygons')
             file_name = data.get('file_name')
 
-            maps = Map.objects.filter(worker=worker)
-            if not maps.filter(file_name=file_name).first():
-                Map.objects.create(
+            diagnostics = Diagnostic.objects.filter(worker=worker)
+            if not diagnostics.filter(file_name=file_name).first():
+                Diagnostic.objects.create(
                     worker=worker,
                     geojson=geojson,
                     diagnostic=diagnostic,
@@ -370,17 +420,17 @@ class GetListMapData(APIView):
         try:
             data = self.request.data
             worker = Worker.objects.filter(user__email=data.get('username')).first()
-            maps = Map.objects.filter(worker=worker).order_by(data.get('order_element'))
+            diagnostics = Diagnostic.objects.filter(worker=worker).order_by(data.get('order_element'))
             response = []
-            for map in maps:
+            for diagnostic in diagnostics:
                 response.append({
-                    'geojson': map.geojson,
-                    'diagnostic_label': MAPS_DIAGNOSTICS_2D_LABEL[map.diagnostic],
-                    'units_label': MAPS_UNITS_LABEL[map.unit],
-                    'polygons': map.polygons,
-                    'file_name': map.file_name,
-                    'diagnostic': map.diagnostic,
-                    'units': map.unit
+                    'geojson': diagnostic.geojson,
+                    'diagnostic_label': MAPS_DIAGNOSTICS_2D_LABEL[diagnostic.diagnostic],
+                    'units_label': MAPS_UNITS_LABEL[diagnostic.unit],
+                    'polygons': diagnostic.polygons,
+                    'file_name': diagnostic.file_name,
+                    'diagnostic': diagnostic.diagnostic,
+                    'units': diagnostic.unit
                 })
 
             return Response(response, status=status.HTTP_200_OK)
@@ -395,9 +445,66 @@ class DeleteMapData(APIView):
         try:
             data = self.request.data
             worker = Worker.objects.filter(user__email=data.get('username')).first()
-            map = Map.objects.filter(file_name=data.get('file_name'), worker=worker).first()
-            map.delete()
+            diagnostic = Diagnostic.objects.filter(file_name=data.get('file_name'), worker=worker).first()
+            diagnostic.delete()
             return Response({'success': 'Map data deleted'}, status=status.HTTP_200_OK)
         except:
             return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+# Contents endpoint ----------------------------------------------------------------------------------------------------
+
+class GetContent(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request):
+        try:
+            content = Content.objects.first()
+            response = {
+                'site_title': content.site_title,
+                'server_space': content.server_space,
+                'icon': content.icon_name,
+                'favicon': content.favicon_name,
+                'home_image': content.home_top_image_name,
+                'card_diagnostics_image': content.card_diagnostics_image_name,
+                'card_my_diagnostics_image': content.card_my_diagnostics_image_name,
+                'home_content': content.home_content,
+                'card_diagnostics': content.card_diagnostics,
+                'card_my_diagnostics': content.card_my_diagnostics,
+                'help_content': content.help_content
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        except:
+            return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class GetIcon(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request, filename):
+        try:
+            image_path = os.path.join(MEDIA_ICONS_URL, filename)
+            try:
+                with open(image_path, 'rb') as img:
+                    return HttpResponse(img.read(), content_type='image/jpg')
+            except:
+                with open(f'{MEDIA_ICONS_URL}/default.png', 'rb') as img:
+                    return HttpResponse(img.read(), content_type='image/svg')
+        except:
+            return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class GetImage(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request, filename):
+        try:
+            image_path = os.path.join(MEDIA_IMAGES_URL, filename)
+            try:
+                with open(image_path, 'rb') as img:
+                    return HttpResponse(img.read(), content_type='image/jpg')
+            except:
+                with open(f'{MEDIA_IMAGES_URL}/default.png', 'rb') as img:
+                    return HttpResponse(img.read(), content_type='image/svg')
+        except:
+            return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

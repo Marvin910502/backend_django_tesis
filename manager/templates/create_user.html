@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="pe-3 ps-3">
+    <div class="card">
+        <div class="card-header">
+            <h3>Crear Usuario</h3>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-floating mt-3">
+                            <input type="email" name="email" id="email_input" class="form-control" value="{{ email }}" placeholder="">
+                            <label for="email_input">Correo</label>
+                            <span class="text-danger mt-3" id="invalid_email"></span>
+                        </div>
+                        <div class="form-floating mt-5">
+                            <input type="password" name="password" id="password_input" class="form-control" autocomplete=off placeholder="">
+                            <label for="password_input">Contraseña</label>
+                            <span class="text-danger mt-3" id="invalid_password"></span>
+                        </div>
+                        <div class="form-floating mt-5">
+                            <input type="password" name="re_password" id="re_password_input" class="form-control" placeholder="">
+                            <label for="re_password_input">Repetir Contraseña</label>
+                            <span class="text-danger mt-3" id="invalid_re_password"></span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-floating mt-3">
+                            <input type="text" name="name" id="name_input" class="form-control" value="{{ name }}" placeholder="">
+                            <label for="name_input">Nombre</label>
+                        </div>
+                        <div class="form-floating mt-5">
+                            <input type="text" name="last_names" id="last_names_input" class="form-control" value="{{ last_names }}" placeholder="">
+                            <label for="last_names_input">Apellidos</label>
+                        </div>
+                        <div class="mt-4">
+                            <label for="department_selector">Departamento</label>
+                            <select id="department_selector" class="form-control mt-2" name="department">
+                                {% for department in departments %}
+                                    <option value="{{ department }}" {% if worker.department == department %} selected {% endif %}>{{ department }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mt-3">
+                            <input type="checkbox" class="form-check-input" id="input_is_guess" name="is_guess" {% if isGuess %} checked {% endif %}>
+                            <label for="input_is_guess" class="form-check-label ms-2">Invitado</label>
+                            <input type="checkbox" class="form-check-input ms-5" id="input_is_guess" name="is_manager" {% if isManager %} checked {% endif %}>
+                            <label for="input_is_guess" class="form-check-label ms-2">Gestor</label>
+                            <input type="checkbox" class="form-check-input ms-5" id="input_is_guess" name="is_admin" {% if isAdmin %} checked {% endif %}>
+                            <label for="input_is_guess" class="form-check-label ms-2">Administrador</label>
+                        </div>
+                    </div>
+                    <div class="mt-5">
+                        <input type="submit" id="submit_button" class="btn btn-primary" value="Crear Usuario">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block custom_scripts %}
+    <script>
+        let input_email = document.getElementById("email_input")
+        let input_password = document.getElementById("password_input")
+        let input_re_password = document.getElementById("re_password_input")
+        let button = document.getElementById("submit_button")
+        let valid0 = false
+        let valid1 = false
+        let valid2 = false
+
+        function button_validate(valid0, valid1, valid2){
+            button.disabled = !(valid0 && valid1 && valid2);
+        }
+
+        function validate_email(email){
+            if (!email || !email.includes('@') || !email.includes('.') || email !== email.toLowerCase() || email.includes(' ')){
+                document.getElementById('invalid_email').innerText = "El correo es requerido con un formato correcto"
+                valid0 = false
+                button_validate(valid0, valid1, valid2)
+            }
+            else {
+                document.getElementById('invalid_email').innerText = ""
+                valid0 = true
+                button_validate(valid0, valid1, valid2)
+            }
+        }
+
+        function validate(password){
+          if (password.length < 8) {
+                document.getElementById('invalid_password').innerText = "La contraseña es requerida y debe contener un mínimo de 8 caracteres"
+                valid1 = false
+                button_validate(valid0, valid1, valid2)
+          }
+          else {
+                document.getElementById('invalid_password').innerText = ""
+                valid1 = true
+                button_validate(valid0, valid1, valid2)
+          }
+        }
+
+        function compare(password, re_password){
+            console.log(re_password)
+          if (password !== re_password || !re_password) {
+                document.getElementById('invalid_re_password').innerText = "La contraseña repetida no coincide con la contraseña"
+                valid2 = false
+                button_validate(valid0, valid1, valid2)
+          }
+          else {
+                document.getElementById('invalid_re_password').innerText = ""
+                valid2 = true
+                button_validate(valid0, valid1, valid2)
+          }
+        }
+
+        function total_validation(){
+            validate_email(input_email.value)
+            validate(input_password.value)
+            compare(input_password.value, input_re_password.value)
+        }
+
+        total_validation()
+
+
+        input_password.addEventListener("input", () => {
+            total_validation()
+        })
+
+        input_re_password.addEventListener("input", () => {
+            total_validation()
+        })
+
+        input_email.addEventListener("input", () => {
+            total_validation()
+        })
+
+
+    </script>
+{% endblock custom_scripts %}

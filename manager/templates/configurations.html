@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+    <div class="ps-3 pe-3 mb-5">
+        <div class="card mt-3">
+            <div class="card-header">
+                <h3>Configuraciones</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-4 ps-4 pe-4">
+                            <div class="form-group">
+                                <label class="form-label" for="input_site_title">Título del Sitio</label>
+                                <input class="form-control" type="text" id="input_site_title" name="site_title" value="{{ site_title }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label mt-4" for="input_server_space">Espacio del servidor en GB</label>
+                                <input class="form-control" type="number" step="0.01" name="server_space" id="input_server_space" value="{{ server_space }}" required>
+                            </div>
+                        </div>
+                        <div class="col-4 ps-5 pe-5">
+                            <div class="form-group">
+                                <label class="form-label mb-2" for="input_icon">Icono del Sitio</label><br>
+                                <img src="{{ icon | safe }}" class="mb-2 me-2" style="max-height:86px" alt="">
+                                <div class="row">
+                                    <div class="col-10">
+                                        <input class="form-control" type="file" id="input_icon" name="icon">
+                                    </div>
+                                    <div class="col-2 pt-1">
+                                        <a class="text-danger" href="{% url 'delete_images_site' 'icon' %}"><i class="fa fa-trash"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4 ps-5 pe-5">
+                            <div class="form-group">
+                                <label class="form-label mb-2" for="input_favicon">Icono de Pestaña del Sitio</label><br>
+                                <img src="{{ favicon | safe }}" class="mb-2" style="max-height:86px" alt="">
+                                <div class="row">
+                                    <div class="col-10">
+                                        <input class="form-control" type="file" id="input_favicon" name="favicon">
+                                    </div>
+                                    <div class="col-2 pt-1">
+                                        <a class="text-danger" href="{% url 'delete_images_site' 'favicon' %}"><i class="fa fa-trash"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="mt-5">
+                    <div class="row mt-5 mb-5">
+                        <div class="col-4 ps-5 pe-5">
+                            <div class="form-group">
+                                <label class="form-label mb-2" for="input_home_top_image">Imagen superior del Inicio</label><br>
+                                <img src="{{ home_top_image | safe }}" class="mb-2" style="max-height:200px" alt="">
+                                <div class="row">
+                                    <div class="col-10">
+                                        <input class="form-control" type="file" id="input_home_top_image" name="home_top_image">
+                                    </div>
+                                    <div class="col-2 pt-1">
+                                        <a class="text-danger" href="{% url 'delete_images_site' 'home_image' %}"><i class="fa fa-trash"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4 ps-5 pe-5">
+                            <div class="form-group">
+                                <label class="form-label mb-2" for="input_card_diagnostics_image">Imagen Tarjeta de Diagnósticos</label><br>
+                                <img src="{{ card_diagnostics_image | safe }}" class="mb-2" style="max-height:200px" alt="">
+                                <div class="row">
+                                    <div class="col-10">
+                                        <input class="form-control" type="file" id="input_card_diagnostics_image" name="card_diagnostics_image">
+                                    </div>
+                                    <div class="col-2 pt-1">
+                                        <a class="text-danger" href="{% url 'delete_images_site' 'card_diagnostics' %}"><i class="fa fa-trash"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4 ps-5 pe-5">
+                            <div class="form-group">
+                                <label class="form-label mb-2" for="input_card_my_diagnostics_image">Imagen Tarjeta de Mis Diagnósticos</label><br>
+                                <img src="{{ card_my_diagnostics_image | safe }}" class="mb-2" style="max-height:200px" alt="">
+                                <div class="row">
+                                    <div class="col-10">
+                                        <input class="form-control" type="file" id="input_card_my_diagnostics_image" name="card_my_diagnostics_image">
+                                    </div>
+                                    <div class="col-2 pt-1">
+                                        <a class="text-danger" href="{% url 'delete_images_site' 'card_my_diagnostics' %}"><i class="fa fa-trash"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ms-3 mt-3">
+                        <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Guardar </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

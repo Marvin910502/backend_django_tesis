@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block custom_style %}
+    <link rel="stylesheet" href="{% static 'ckeditor5-build-classic-40.0.0/ckeditor5-build-classic/sample/css/content.css' %}">
+    <style>
+        .ck-editor {
+            color: #000000 !important; /* Cambia el color de fondo a tu elección */
+        }
+    </style>
+{% endblock custom_style %}
+
+{% block content %}
+    <div class="ps-3 pe-3 mb-3">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="float-start">Contenidos</h3>
+            <button class="btn btn-primary float-end" form="content_form" type="submit"><i class="fa fa-save me-2"></i>Guardar</button>
+        </div>
+        <div class="card-body">
+            <form method="post" id="content_form">
+                {% csrf_token %}
+                <div class="form-group mt-3">
+                    <label class="mb-3" for="editor1">Contenido de la página de Inicio</label>
+                    <textarea id="editor1" class="ck-editor" name="home_content">
+                        {{ home_content }}
+                    </textarea>
+                </div>
+                <div class="form-group mt-5">
+                    <label class="mb-3" for="editor2">Texto de tarjeta de Diagnósticos</label>
+                    <textarea id="editor2" class="ck-editor" name="card_diagnostics">
+                        {{ card_diagnostics }}
+                    </textarea>
+                </div>
+                <div class="form-group mt-5">
+                    <label class="mb-3" for="editor3">Texto de tarjeta de Mis Diagnósticos</label>
+                    <textarea id="editor3" class="ck-editor" name="card_my_diagnostics">
+                        {{ card_my_diagnostics }}
+                    </textarea>
+                </div>
+                <div class="form-group mt-5 mb-3">
+                    <label class="mb-3" for="editor4">Contenido de la página de Ayuda</label>
+                    <textarea id="editor4" class="ck-editor" name="help_content">
+                        {{ help_content }}
+                    </textarea>
+                </div>
+            </form>
+        </div>
+        <div class="card-footer">
+            <button class="btn btn-primary float-end" form="content_form" type="submit"><i class="fa fa-save me-2"></i>Guardar</button>
+        </div>
+    </div>
+
+    </div>
+
+{% endblock content %}
+
+{% block custom_scripts %}
+    <script>
+        ClassicEditor
+            .create(document.querySelector('#editor1'))
+            .then()
+            .catch( error => {
+                console.error( error );
+            } );
+        ClassicEditor
+            .create(document.querySelector('#editor2'))
+            .then()
+            .catch( error => {
+                console.error( error );
+            } );
+        ClassicEditor
+            .create(document.querySelector('#editor3'))
+            .then()
+            .catch( error => {
+                console.error( error );
+            } );
+        ClassicEditor
+            .create(document.querySelector('#editor4'))
+            .then()
+            .catch( error => {
+                console.error( error );
+            } );
+    </script>
+{% endblock custom_scripts %}

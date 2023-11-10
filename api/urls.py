@@ -1,5 +1,23 @@
 from django.urls import path
-from api.endpoints import RegisterView, TwoDimensionsVariablesMaps, GetListFiles, GetUserData, SaveMapData, GetListMapData, DeleteMapData, SaveFile, DeleteFile, CrossSections, UpdateUser, ChangePasswd
+from api.endpoints import (
+                           RegisterView,
+                           TwoDimensionsVariablesMaps,
+                           GetListFiles,
+                           GetUserData,
+                           SaveMapData,
+                           GetListMapData,
+                           DeleteMapData,
+                           SaveFile,
+                           DeleteFile,
+                           CrossSections,
+                           UpdateUser,
+                           ChangePasswd,
+                           GetContent,
+                           UploadProfileImage,
+                           GetProfileImage,
+                           GetIcon,
+                           GetImage,
+                          )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -14,16 +32,22 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('get-user/', GetUserData.as_view(), name='get_user'),
     path('update-user/', UpdateUser.as_view(), name='update_user'),
+    path('upload-profile-image/', UploadProfileImage.as_view(), name='upload_profile_image'),
+    path('media/get-profile-image/<str:filename>', GetProfileImage.as_view(), name='get_profile_image'),
     path('change-passwd/', ChangePasswd.as_view(), name='change_passwd'),
     # Plot data endpoints
     path('2d-variables-maps/', TwoDimensionsVariablesMaps.as_view(), name='2d_variables_maps'),
     path('cross-sections/', CrossSections.as_view(), name='cross_sections'),
-    # File manager enpoints
+    # File manager endpoints
     path('get-wrfout-list/', GetListFiles.as_view(), name='get_wrfout_list'),
     path('upload-file/', SaveFile.as_view(), name='upload_file'),
     path('delete-file/', DeleteFile.as_view(), name='delete_file'),
     # Worker data endpoints
     path('save-map-data/', SaveMapData.as_view(), name='save_map_data'),
     path('get-list-map-data/', GetListMapData.as_view(), name='get_list_map_data'),
-    path('delete-map-data/', DeleteMapData.as_view(), name='delete_map_data')
+    path('delete-map-data/', DeleteMapData.as_view(), name='delete_map_data'),
+    # Content data endpoints
+    path('get-content/', GetContent.as_view(), name='get_content'),
+    path('media/get-icon/<str:filename>', GetIcon.as_view(), name='get-icon'),
+    path('media/get-image/<str:filename>', GetImage.as_view(), name='get-image')
 ]
