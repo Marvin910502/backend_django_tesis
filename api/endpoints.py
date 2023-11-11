@@ -2,7 +2,6 @@
 import json
 import os
 import uuid
-from builtins import max, min
 
 # Rest Framework
 from rest_framework.views import APIView
@@ -13,8 +12,7 @@ from rest_framework import permissions, status
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.http import HttpResponse
-from django.utils.text import slugify
-from api.models import WRFoutFileList
+from api.models import WRFoutFile
 from workers.models import Worker, Diagnostic
 from manager.models import Content
 from backend_django_tesis.settings import BASE_DIR, MEDIA_PROFILES_URL, MEDIA_ICONS_URL, MEDIA_IMAGES_URL
@@ -24,7 +22,7 @@ from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 import geojsoncontour
 import numpy as np
-from wrf import getvar, latlon_coords, extract_times
+from wrf import getvar, latlon_coords
 
 
 # Selectors
@@ -88,7 +86,8 @@ class RegisterView(APIView):
                 )
 
                 return Response({"success": "User create successfully"}, status=status.HTTP_201_CREATED)
-        except:
+        except Exception as error:
+            print(error)
             return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -320,10 +319,10 @@ class GetListFiles(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
-        WRFoutFileList.refresh_list_of_files()
+        WRFoutFile.refresh_list_of_files()
         data = self.request.data
         list_file = []
-        for file in WRFoutFileList.objects.all().order_by(data.get('order')):
+        for file in WRFoutFile.objects.all().order_by(data.get('order')):
             if file.path_file:
                 path = file.path_file.path
             else:
@@ -349,11 +348,11 @@ class SaveFile(APIView):
             file_name = file.name.replace(' ', '_').replace('(', '').replace(')', '').replace('[', '').replace(']', '')
             content = Content.objects.first()
 
-            valid_space = (content.server_space - WRFoutFileList.get_used_space()) - round(file.size/1000000000, 2)
+            valid_space = (content.server_space - WRFoutFile.get_used_space()) - round(file.size/1000000000, 2)
 
             if valid_space >= 0:
-                if not WRFoutFileList.objects.filter(name=file_name).first():
-                    wrf_data = WRFoutFileList.objects.create(
+                if not WRFoutFile.objects.filter(name=file_name).first():
+                    wrf_data = WRFoutFile.objects.create(
                         name=file_name,
                         path_file=file,
                         size=round(file.size/1000000, 2)
@@ -387,10 +386,10 @@ class DeleteFile(APIView):
             return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# Worker map data endpoints --------------------------------------------------------------------------------------------
+# Worker diagnostic data endpoints -------------------------------------------------------------------------------------
 
 
-class SaveMapData(APIView):
+class SaveDiagnostic(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
@@ -402,6 +401,13 @@ class SaveMapData(APIView):
             units = data.get('units')
             polygons = data.get('polygons')
             file_name = data.get('file_name')
+            z = data.get('z')
+            x = data.get('x')
+            y = data.get('y')
+            x_min = data.get('minX')
+            x_max = data.get('maxX')
+            y_min = data.get('minY')
+            y_max = data.get('maxY')
 
             diagnostics = Diagnostic.objects.filter(worker=worker)
             if not diagnostics.filter(file_name=file_name).first():
@@ -411,16 +417,24 @@ class SaveMapData(APIView):
                     diagnostic=diagnostic,
                     unit=units,
                     polygons=polygons,
-                    file_name=file_name
+                    file_name=file_name,
+                    z=z,
+                    x=x,
+                    y=y,
+                    min_x=x_min,
+                    max_x=x_max,
+                    min_y=y_min,
+                    max_y=y_max
                 )
                 return Response({'success': 'A map data was save with success'}, status=status.HTTP_201_CREATED)
             else:
                 return Response({'error': 'Something went wrong'}, status=status.HTTP_208_ALREADY_REPORTED)
-        except:
+        except Exception as error_general:
+            print(error_general)
             return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class GetListMapData(APIView):
+class GetDiagnosticList(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
@@ -437,7 +451,14 @@ class GetListMapData(APIView):
                     'polygons': diagnostic.polygons,
                     'file_name': diagnostic.file_name,
                     'diagnostic': diagnostic.diagnostic,
-                    'units': diagnostic.unit
+                    'units': diagnostic.unit,
+                    'data': diagnostic.z,
+                    'x': diagnostic.x,
+                    'y': diagnostic.y,
+                    'min_x': diagnostic.min_x,
+                    'max_x': diagnostic.max_x,
+                    'min_y': diagnostic.min_y,
+                    'max_y': diagnostic.max_y
                 })
 
             return Response(response, status=status.HTTP_200_OK)
@@ -445,7 +466,7 @@ class GetListMapData(APIView):
             return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class DeleteMapData(APIView):
+class DeleteDiagnostic(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
@@ -470,7 +491,7 @@ class GetContent(APIView):
             response = {
                 'site_title': content.site_title,
                 'server_space': content.server_space,
-                'used_space': WRFoutFileList.get_used_space(),
+                'used_space': WRFoutFile.get_used_space(),
                 'icon': content.icon_name,
                 'favicon': content.favicon_name,
                 'home_image': content.home_top_image_name,

@@ -9,7 +9,7 @@
     <link href="{% static 'fontawesome/css/brands.css' %}" rel="stylesheet">
     <link href="{% static 'fontawesome/css/solid.css' %}" rel="stylesheet">
     <title title="CFA-WRF-Admin">WRF-Admin</title>
-    <link rel="icon" type="image/x-icon" href="{% static 'icons/cfa_logo_dark.png' %}">
+    <link rel="icon" type="image/x-icon" href="{{ favicon | safe }}">
     <script type="text/javascript" src="{% static 'ckeditor5-40.0.0-aohy8a9omyu6/build/ckeditor.js' %}"></script>
     {% block custom_style %}{% endblock custom_style %}
 </head>
@@ -18,7 +18,7 @@
     <nav class="navbar navbar-expand-lg bg-body-tertiary sticky-top">
         <div class="container-fluid">
             <a class="navbar-brand" href="{% url 'users' %}">
-                <img id="theme_logo" alt="cfa logo" width="45hv" class="me-3" src="{% static 'icons/cfa_logo_dark.png' %}">
+                <img id="theme_logo" alt="cfa logo" width="45hv" class="me-3" src="{{ icon | safe }}">
                 <h4 class="float-end">CFA WRF Admin</h4>
             </a>
             {% if user.is_authenticated %}
