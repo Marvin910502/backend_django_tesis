@@ -86,7 +86,8 @@ class RegisterView(APIView):
                 )
 
                 return Response({"success": "User create successfully"}, status=status.HTTP_201_CREATED)
-        except:
+        except Exception as error:
+            print(error)
             return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

@@ -10,7 +10,7 @@ class Worker(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     profile_image = models.FileField(upload_to='static/profile_images/', blank=True, null=True)
     image_name = models.CharField(max_length=200, blank=True, null=True)
-    department = models.CharField(max_length=150, default='Visitante')
+    department = models.CharField(max_length=150, blank=True, null=True)
     name = models.CharField(max_length=50, null=True, blank=True)
     last_names = models.CharField(max_length=100, null=True, blank=True)
     isAdmin = models.BooleanField(default=False)
