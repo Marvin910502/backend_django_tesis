@@ -3,3 +3,5 @@
 ./wrf_app/wrf_files/
 ./wrfout_files/*
 /wrfout_files/*
+/static/images/*
+/static/icons/*

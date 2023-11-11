@@ -31,4 +31,11 @@ class Diagnostic(models.Model):
     unit = models.CharField(max_length=20)
     polygons = models.IntegerField()
     file_name = models.CharField(max_length=100)
+    z = models.TextField()
+    x = models.TextField()
+    y = models.TextField()
+    min_x = models.FloatField()
+    max_x = models.FloatField()
+    min_y = models.FloatField()
+    max_y = models.FloatField()
 

@@ -7,7 +7,7 @@ from backend_django_tesis.settings import BASE_DIR
 
 # Create your models here.
 
-class WRFoutFileList(models.Model):
+class WRFoutFile(models.Model):
     name = models.TextField(unique=True)
     path_file = models.FileField(upload_to="wrfout_files/", blank=True, null=True)
     path_string = models.TextField(blank=True, null=True)

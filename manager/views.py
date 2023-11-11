@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from backend_django_tesis.settings import LOGIN_URL, MEDIA_PROFILES_URL, MEDIA_ICONS_URL, MEDIA_IMAGES_URL
 
 from workers.models import Worker, Diagnostic
-from api.models import WRFoutFileList
+from api.models import WRFoutFile
 from manager.models import Content
 from django.contrib.auth.models import User
 
@@ -34,10 +34,10 @@ def check_session_message(request):
 def amounts_data():
     workers = Worker.objects.all()
     diagnostics = Diagnostic.objects.all()
-    files = WRFoutFileList.objects.all()
+    files = WRFoutFile.objects.all()
     content = Content.objects.first()
 
-    used_space = WRFoutFileList.get_used_space()
+    used_space = WRFoutFile.get_used_space()
     free_space = 100 - (used_space*100/content.server_space)
 
     low_space = False
@@ -58,6 +58,8 @@ def amounts_data():
 
 def login_admin(request):
     message, class_alert = check_session_message(request)
+    data = amounts_data()
+    content = data.get('content')
 
     if request.user.is_authenticated:
         return redirect('users')
@@ -80,6 +82,8 @@ def login_admin(request):
             class_alert = DANGER_MESSAGE
 
     context = {
+        'icon': content.icon.url if content.icon else '',
+        'favicon': content.favicon.url if content.favicon else '',
         'message': message,
         'class_alert': class_alert
     }
@@ -96,7 +100,11 @@ def manage_users(request):
     message, class_alert = check_session_message(request)
     data = amounts_data()
 
+    content = data.get('content')
+
     context = {
+        'icon': content.icon.url if content.icon else '',
+        'favicon': content.favicon.url if content.favicon else '',
         'workers': data.get('workers'),
         'users_amount': data.get('workers').__len__(),
         'diagnostics_amount': data.get('diagnostics').__len__(),
@@ -114,6 +122,8 @@ def manage_users(request):
 def manage_edit_user(request, uuid):
     message, class_alert = check_session_message(request)
     data = amounts_data()
+
+    content = data.get('content')
 
     workers = data.get('workers')
     worker = workers.filter(uuid=uuid).first()
@@ -160,6 +170,8 @@ def manage_edit_user(request, uuid):
             class_alert = SUCCESS_MESSAGE
 
     context = {
+        'icon': content.icon.url if content.icon else '',
+        'favicon': content.favicon.url if content.favicon else '',
         'worker': worker,
         'departments': department_list,
         'users_amount': data.get('workers').__len__(),
@@ -178,6 +190,8 @@ def manage_edit_user(request, uuid):
 def manage_create_user(request):
     message, class_alert = check_session_message(request)
     data = amounts_data()
+
+    content = data.get('content')
 
     email = ''
     name = ''
@@ -232,6 +246,8 @@ def manage_create_user(request):
         'is_manager': is_manager,
         'is_admin': is_admin,
         'departments': department_list,
+        'icon': content.icon.url if content.icon else '',
+        'favicon': content.favicon.url if content.favicon else '',
         'users_amount': data.get('workers').__len__(),
         'diagnostics_amount': data.get('diagnostics').__len__(),
         'files_amount': data.get('files').__len__(),
@@ -262,7 +278,7 @@ def manage_contents(request):
     message, class_alert = check_session_message(request)
     data = amounts_data()
 
-    content = Content.objects.first()
+    content = data.get('content')
     home_content = content.home_content
     card_diagnostics = content.card_diagnostics
     card_my_diagnostics = content.card_my_diagnostics
@@ -280,6 +296,8 @@ def manage_contents(request):
         content.save()
 
     context = {
+        'icon': content.icon.url if content.icon else '',
+        'favicon': content.favicon.url if content.favicon else '',
         'home_content': home_content,
         'card_diagnostics': card_diagnostics,
         'card_my_diagnostics': card_my_diagnostics,
