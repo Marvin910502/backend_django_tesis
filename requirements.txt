@@ -13,3 +13,4 @@ geojsoncontour==0.4.0
 geojson==3.0.1
 numpy==1.25.2
 djangorestframework-simplejwt==5.3.0
+django-ipware==5.0.2
