@@ -8,7 +8,7 @@ from backend_django_tesis.settings import LOGIN_URL, MEDIA_PROFILES_URL, MEDIA_I
 
 from workers.models import Worker, Diagnostic
 from api.models import WRFoutFile
-from manager.models import Content
+from manager.models import Content, Logs
 from django.contrib.auth.models import User
 
 # Create your views here.
@@ -32,7 +32,7 @@ def check_session_message(request):
 
 
 def amounts_data():
-    workers = Worker.objects.all()
+    workers = Worker.objects.all().order_by('user__username')
     diagnostics = Diagnostic.objects.all()
     files = WRFoutFile.objects.all()
     content = Content.objects.first()
@@ -453,3 +453,22 @@ def page_404(request):
         'favicon': content.favicon.url if content.favicon else '',
     }
     return render(request, 'page_404.html', context)
+
+
+@login_required(login_url=LOGIN_URL)
+def logs(request, order):
+    data = amounts_data()
+    content = data.get('content')
+
+    context = {
+        'logs': Logs.objects.all().order_by(order),
+        'users_amount': data.get('workers').__len__(),
+        'diagnostics_amount': data.get('diagnostics').__len__(),
+        'files_amount': data.get('files').__len__(),
+        'storage_space': data.get('content').server_space,
+        'storage_used': data.get('used_space'),
+        'low_space': data.get('low_space'),
+        'icon': content.icon.url if content.icon else '',
+        'favicon': content.favicon.url if content.favicon else '',
+    }
+    return render(request, 'logs.html', context)

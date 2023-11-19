@@ -22,3 +22,12 @@ class Content(models.Model):
     help_content = models.TextField(blank=True)
 
 
+class Logs(models.Model):
+    action = models.CharField(max_length=100, blank=True, null=True)
+    username = models.CharField(max_length=100, blank=True, null=True)
+    ip = models.CharField(max_length=30, blank=True, null=True)
+    date_time = models.DateTimeField(auto_now_add=True)
+    status_code = models.CharField(max_length=3, blank=True, null=True)
+    message = models.CharField(max_length=200, blank=True, null=True)
+    metadata = models.TextField(blank=True, null=True)
+

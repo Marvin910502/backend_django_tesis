@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container">
+        <div class="card mt-3 mb-5">
+            <div class="card-header flex-row">
+                <h3 class="float-start">Registros</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'action' %}">Acción <i class="fa-regular fa-sort"></i></a></th>
+                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'username' %}">Usuario <i class="fa-regular fa-sort"></i></a></th>
+                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'ip' %}">IP <i class="fa-regular fa-sort"></i></a></th>
+                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'date_time' %}">Fecha y Hora <i class="fa-regular fa-sort"></i></a></th>
+                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'status_code' %}">Estatus <i class="fa-regular fa-sort"></i></a></th>
+                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'message' %}">Mensaje <i class="fa-regular fa-sort"></i></a></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for log in logs %}
+                            <tr>
+                              <th>{{ log.action }}</th>
+                              <th>{{ log.username }}</th>
+                              <td>{{ log.ip }}</td>
+                              <td>{{ log.date_time }}</td>
+                              <td>{{ log.status_code }}</td>
+                              <td>{{ log.message }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block custom_scripts %}{% endblock custom_scripts %}
