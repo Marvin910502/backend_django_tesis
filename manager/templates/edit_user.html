@@ -13,11 +13,6 @@
                 <div class="row">
                     <div class="col-6">
                         <div class="form-floating mt-3">
-                            <input type="password" name="old_password" id="old_password_input" class="form-control" placeholder="">
-                            <label for="old_password_input">Contraseña Actual</label>
-                            <span class="text-danger mt-3" id="invalid_old_password"></span>
-                        </div>
-                        <div class="form-floating mt-5">
                             <input type="password" name="password" id="password_input" class="form-control" placeholder="">
                             <label for="password_input">Nueva Contraseña</label>
                             <span class="text-danger mt-3" id="invalid_password"></span>
@@ -31,7 +26,7 @@
                     </div>
                     <div class="col-6">
                         <div class="form-floating mt-3">
-                            <input type="email" name="email" id="email_input" class="form-control" value="{{ worker.user.email }}" placeholder="">
+                            <input type="email" name="email" id="email_input" class="form-control" value="{{ email }}" placeholder="">
                             <label for="email_input">Correo</label>
                             <span class="text-danger mt-3" id="invalid_email"></span>
                         </div>
@@ -73,17 +68,15 @@
     <script>
 
         let input_email = document.getElementById("email_input")
-        let input_old_password = document.getElementById("old_password_input")
         let input_password = document.getElementById("password_input")
         let input_re_password = document.getElementById("re_password_input")
         let password_button = document.getElementById("password_button")
         let update_button = document.getElementById("update_button")
-        let valid1 = false
         let valid2 = false
         let valid3 = false
 
-        function button_validate(valid1, valid2, valid3){
-            password_button.disabled = !(valid1 && valid2 && valid3);
+        function button_validate(valid2, valid3){
+            password_button.disabled = !(valid2 && valid3);
         }
 
         function validate_email(email){
@@ -97,29 +90,17 @@
             }
         }
 
-        function validate_old(old_password){
-            if (old_password.length < 8){
-                document.getElementById('invalid_old_password').innerText = "La contraseña actual es requerida y debe contener un mínimo de 8 caracteres"
-                valid1 = false
-                button_validate(valid1, valid2, valid3)
-            }
-            else {
-                document.getElementById('invalid_old_password').innerText = ""
-                valid1 = true
-                button_validate(valid1, valid2, valid3)
-            }
-        }
 
-        function validate(password, old_password){
-          if (password.length < 8 || password === old_password) {
+        function validate(password){
+          if (password.length < 8) {
                 document.getElementById('invalid_password').innerText = "La nueva contraseña es requerida, debe contener un mínimo de 8 caracteres y no puede ser igual a la contraseña actual"
                 valid2 = false
-                button_validate(valid1, valid2, valid3)
+                button_validate(valid2, valid3)
           }
           else {
                 document.getElementById('invalid_password').innerText = ""
                 valid2 = true
-                button_validate(valid1, valid2, valid3)
+                button_validate(valid2, valid3)
           }
         }
 
@@ -128,27 +109,22 @@
           if (password !== re_password || !re_password) {
                 document.getElementById('invalid_re_password').innerText = "La contraseña repetida no coincide con la contraseña"
                 valid3 = false
-                button_validate(valid1, valid2, valid3)
+                button_validate(valid2, valid3)
           }
           else {
                 document.getElementById('invalid_re_password').innerText = ""
                 valid3 = true
-                button_validate(valid1, valid2, valid3)
+                button_validate(valid2, valid3)
           }
         }
 
         function total_validation(){
-            validate_old(input_old_password.value)
-            validate(input_password.value, input_old_password.value)
+            validate(input_password.value)
             compare(input_password.value, input_re_password.value)
         }
 
         total_validation()
         validate_email(input_email.value)
-
-        input_old_password.addEventListener("input", () => {
-            total_validation()
-        })
 
         input_password.addEventListener("input", () => {
             total_validation()
