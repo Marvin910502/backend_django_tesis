@@ -152,7 +152,7 @@ def manage_edit_user(request, uuid):
             email = request_post.get('email')
             name = request_post.get('name')
             last_names = request_post.get('last_names')
-            department = request_post.get('department')
+            department = request_post.get('department') if request_post.get('department') else 'Visitante'
             is_guess = True if request_post.get('is_guess') else False
             is_manger = True if request_post.get('is_manager') else False
             is_admin = True if request_post.get('is_admin') else False
@@ -207,7 +207,7 @@ def manage_create_user(request):
         request_post = request.POST
         email = request_post.get('email')
         name = request_post.get('name')
-        last_names = request_post.get('last_name')
+        last_names = request_post.get('last_names')
         department = request_post.get('department')
         is_guess = True if request_post.get('is_guess') else False
         is_manager = True if request_post.get('is_manager') else False
@@ -227,8 +227,8 @@ def manage_create_user(request):
                 Worker.objects.create(
                     user=user,
                     department=department,
-                    name=name,
-                    last_names=last_names,
+                    name=name if name else '',
+                    last_names=last_names if last_names else '',
                     isGuess=is_guess,
                     isManager=is_manager,
                     isAdmin=is_admin

@@ -25,7 +25,7 @@
                             <tr>
                               <th>{{ worker.user.email }}</th>
                               <th>{% if worker.isGuess %}<span class="badge rounded-pill text-bg-primary ms-1">Invitado</span>{% endif %}{% if worker.isManager %}<span class="badge rounded-pill text-bg-secondary ms-1">Gestor</span>{% endif %}{% if worker.isAdmin %}<span class="badge rounded-pill text-bg-success ms-1"> Administrador</span>{% endif %}</th>
-                              <td>{{ worker.name }} {{ worker.last_names }}</td>
+                              <td>{% if worker.name %}{{ worker.name }}{% endif %} {% if worker.last_names %}{{ worker.last_names }}{% endif %}</td>
                               <td>{{ worker.department }}</td>
                               <td class="text-center">
                                   <a href="{% url 'manager_edit_user' worker.uuid %}" class="me-2 text-decoration-none">

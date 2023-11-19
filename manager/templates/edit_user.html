@@ -31,11 +31,11 @@
                             <span class="text-danger mt-3" id="invalid_email"></span>
                         </div>
                         <div class="form-floating mt-5">
-                            <input type="text" name="name" id="name_input" class="form-control" value="{{ worker.name }}" placeholder="">
+                            <input type="text" name="name" id="name_input" class="form-control" {% if worker.name %} value="{{ worker.name }}" {% endif %} placeholder="">
                             <label for="name_input">Nombre</label>
                         </div>
                         <div class="form-floating mt-5">
-                            <input type="text" name="last_names" id="last_names_input" class="form-control" value="{{ worker.last_names }}" placeholder="">
+                            <input type="text" name="last_names" id="last_names_input" class="form-control" {% if worker.last_names %} value="{{ worker.last_names }}" {% endif %} placeholder="">
                             <label for="last_names_input">Apellidos</label>
                         </div>
                         <div class="mt-3">

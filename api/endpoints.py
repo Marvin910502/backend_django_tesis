@@ -79,9 +79,9 @@ class RegisterView(APIView):
                 )
                 Worker.objects.create(
                     user=user,
-                    name=name,
-                    last_names=last_names,
-                    department=department,
+                    name=name if name else '',
+                    last_names=last_names if last_names else '',
+                    department=department if department else 'Visitante',
                     isGuess=True
                 )
 
