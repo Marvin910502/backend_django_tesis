@@ -128,24 +128,24 @@ def manage_edit_user(request, uuid):
     workers = data.get('workers')
     worker = workers.filter(uuid=uuid).first()
     user = User.objects.filter(username=worker.user).first()
+    email = user.email
     if request.method == 'POST':
         request_post = request.POST
 
         if 'change_password' in request_post:
-            old_password = request_post.get('old_password')
             password = request_post.get('password')
             re_password = request_post.get('password')
-            if authenticate(username=user.username, password=old_password):
-                if password == re_password:
-                    user.set_password(password)
-                    user.save()
-                    message = 'La contraseña fue actualizada con éxito'
-                    class_alert = SUCCESS_MESSAGE
-                else:
-                    message = 'Las contraseña nueva no coincide con la repetida'
-                    class_alert = DANGER_MESSAGE
+            if password == re_password:
+                user.set_password(password)
+                user.save()
+                message = 'La contraseña fue actualizada con éxito'
+                class_alert = SUCCESS_MESSAGE
+                if worker.isAdmin:
+                    request.session['message'] = 'La contraseña fue actualizada con éxito'
+                    request.session['class_alert'] = SUCCESS_MESSAGE
+                    return redirect('login_admin')
             else:
-                message = 'La contraseña actual es incorrecta'
+                message = 'Las contraseña nueva no coincide con la repetida'
                 class_alert = DANGER_MESSAGE
 
         if 'update_user' in request_post:
@@ -168,8 +168,11 @@ def manage_edit_user(request, uuid):
             worker.save()
             message = 'Los datos del usuario han sido actualizados'
             class_alert = SUCCESS_MESSAGE
+        if request_post.get('email') and worker.isAdmin:
+            return redirect('logout_admin')
 
     context = {
+        'email': email,
         'icon': content.icon.url if content.icon else '',
         'favicon': content.favicon.url if content.favicon else '',
         'worker': worker,
