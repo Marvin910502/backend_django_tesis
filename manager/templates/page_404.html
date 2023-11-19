@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div>
+        <h1 class="text-center">La página o el recurso que busca no existe</h1>
+        <div style="display:flex; justify-content:center; align-items:center">
+            <img class="w-75" src="{% static 'default/image-404.png' %}">
+        </div>
+    </div>
+{% endblock content %}

@@ -336,31 +336,46 @@ def manage_configurations(request):
         content.site_title = site_title
         if icon:
             if content.icon_name:
-                os.remove(f"{MEDIA_ICONS_URL}/{content.icon_name}")
+                try:
+                    os.remove(f"{MEDIA_ICONS_URL}/{content.icon_name}")
+                except Exception as error:
+                    print(error)
             icon.name = uuid.uuid4().__str__()
             content.icon = icon
             content.icon_name = icon.name
         if favicon:
             if content.favicon_name:
-                os.remove(f"{MEDIA_ICONS_URL}/{content.favicon_name}")
+                try:
+                    os.remove(f"{MEDIA_ICONS_URL}/{content.favicon_name}")
+                except Exception as error:
+                    print(error)
             favicon.name = uuid.uuid4().__str__()
             content.favicon = favicon
             content.favicon_name = favicon.name
         if home_top_image:
             if content.home_top_image_name:
-                os.remove(f"{MEDIA_IMAGES_URL}/{content.home_top_image_name}")
+                try:
+                    os.remove(f"{MEDIA_IMAGES_URL}/{content.home_top_image_name}")
+                except Exception as error:
+                    print(error)
             home_top_image.name = uuid.uuid4().__str__()
             content.home_top_image = home_top_image
             content.home_top_image_name = home_top_image.name
         if card_diagnostics_image:
             if content.card_diagnostics_image_name:
-                os.remove(f"{MEDIA_IMAGES_URL}/{content.card_diagnostics_image_name}")
+                try:
+                    os.remove(f"{MEDIA_IMAGES_URL}/{content.card_diagnostics_image_name}")
+                except Exception as error:
+                    print(error)
             card_diagnostics_image.name = uuid.uuid4().__str__()
             content.card_diagnostics_image = card_diagnostics_image
             content.card_diagnostics_image_name = card_diagnostics_image.name
         if card_my_diagnostics_image:
             if content.card_my_diagnostics_image_name:
-                os.remove(f"{MEDIA_IMAGES_URL}/{content.card_my_diagnostics_image_name}")
+                try:
+                    os.remove(f"{MEDIA_IMAGES_URL}/{content.card_my_diagnostics_image_name}")
+                except Exception as error:
+                    print(error)
             card_my_diagnostics_image.name = uuid.uuid4().__str__()
             content.card_my_diagnostics_image = card_my_diagnostics_image
             content.card_my_diagnostics_image_name = card_my_diagnostics_image.name
@@ -418,3 +433,20 @@ def delete_image_site(request, image):
         content.save()
 
     return redirect('manager_configuration')
+
+
+def page_404(request):
+    data = amounts_data()
+    content = data.get('content')
+
+    context = {
+        'users_amount': data.get('workers').__len__(),
+        'diagnostics_amount': data.get('diagnostics').__len__(),
+        'files_amount': data.get('files').__len__(),
+        'storage_space': data.get('content').server_space,
+        'storage_used': data.get('used_space'),
+        'low_space': data.get('low_space'),
+        'icon': content.icon.url if content.icon else '',
+        'favicon': content.favicon.url if content.favicon else '',
+    }
+    return render(request, 'page_404.html', context)
