@@ -27,7 +27,7 @@ from wrf import getvar, latlon_coords
 
 
 # Selectors
-from api.type_data import MAPS_RESULT_2D, MAPS_DIAGNOSTICS_2D_LABEL, MAPS_UNITS_LABEL
+from api.type_data import MAPS_RESULT_2D, MAPS_DIAGNOSTICS_2D_LABEL, MAPS_UNITS_LABEL, MAPS_UNITS_TAGS
 
 
 # Auth endpoints -------------------------------------------------------------------------------------------------------
@@ -780,7 +780,7 @@ class GetDiagnosticList(APIView):
                 response.append({
                     'geojson': diagnostic.geojson,
                     'diagnostic_label': MAPS_DIAGNOSTICS_2D_LABEL[diagnostic.diagnostic],
-                    'units_label': MAPS_UNITS_LABEL[diagnostic.unit],
+                    'units_label': MAPS_UNITS_TAGS[diagnostic.unit],
                     'polygons': diagnostic.polygons,
                     'file_name': diagnostic.file_name,
                     'diagnostic': diagnostic.diagnostic,

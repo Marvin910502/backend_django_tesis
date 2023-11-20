@@ -46,3 +46,27 @@ MAPS_UNITS_LABEL = {
     'default%': 'default',
     'defaultkg': 'default'
 }
+
+
+MAPS_UNITS_TAGS = {
+    'degC': 'degC',
+    'degCT': 'degC',
+    'degF': 'degF',
+    'K': 'K',
+    'm': 'm',
+    'km': 'km',
+    'dm': 'dm',
+    'ft': 'ft',
+    'hPa': 'hPa',
+    'Pa': 'Pa',
+    'mb': 'mb',
+    'mi': 'mi',
+    'torr': 'torr',
+    'mmhg': 'mmhg',
+    'atm': 'atm',
+    'defaultK': 'K',
+    'defaultm2': 'm2',
+    'defaultm2a': 'm2',
+    'default%': 'porciento',
+    'defaultkg': 'Kg'
+}
