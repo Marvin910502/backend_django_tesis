@@ -313,6 +313,7 @@ class TwoDimensionsVariablesMaps(APIView):
         try:
             urls = data.get('url')
             diagnostic = MAPS_RESULT_2D.get(data.get('diagnostic'))
+            map_palet = data.get('map_palet')
             index = data.get('index')
             units = MAPS_UNITS_LABEL.get(data.get('units'))
             polygons = data.get('polygons')
@@ -410,7 +411,7 @@ class TwoDimensionsVariablesMaps(APIView):
             figure = plt.figure()
             ax = figure.add_subplot(111)
             lvl = np.around(np.arange(minimum, maximum + extra_max, intervals), 4)
-            contourf = ax.contourf(lons, lats, diag, levels=lvl, cmap=plt.cm.jet)
+            contourf = ax.contourf(lons, lats, diag, levels=lvl, cmap=map_palet)
             plt.close('all')
 
             geojson = geojsoncontour.contourf_to_geojson(
@@ -424,6 +425,8 @@ class TwoDimensionsVariablesMaps(APIView):
             response = {
                 'geojson': geojson,
                 'max_index': max_index,
+                'lat': round(diag.projection.moad_cen_lat, 0),
+                'lon': round(diag.projection.stand_lon, 0),
                 'success': 'The data went process',
             }
 
@@ -706,6 +709,8 @@ class SaveDiagnostic(APIView):
         try:
             worker = Worker.objects.filter(user__email=data['username']).first()
             geojson = data.get('geojson')
+            lat = data.get('lat')
+            lon = data.get('lon')
             diagnostic = data.get('diagnostic')
             units = data.get('units')
             polygons = data.get('polygons')
@@ -723,6 +728,8 @@ class SaveDiagnostic(APIView):
                 Diagnostic.objects.create(
                     worker=worker,
                     geojson=geojson,
+                    lat=lat,
+                    lon=lon,
                     diagnostic=diagnostic,
                     unit=units,
                     polygons=polygons,
@@ -779,6 +786,8 @@ class GetDiagnosticList(APIView):
             for diagnostic in diagnostics:
                 response.append({
                     'geojson': diagnostic.geojson,
+                    'lat': diagnostic.lat,
+                    'lon': diagnostic.lon,
                     'diagnostic_label': MAPS_DIAGNOSTICS_2D_LABEL[diagnostic.diagnostic],
                     'units_label': MAPS_UNITS_TAGS[diagnostic.unit],
                     'polygons': diagnostic.polygons,
