@@ -27,6 +27,8 @@ class Worker(models.Model):
 class Diagnostic(models.Model):
     worker = models.ForeignKey(Worker, on_delete=models.CASCADE)
     geojson = models.TextField()
+    lat = models.FloatField()
+    lon = models.FloatField()
     diagnostic = models.CharField(max_length=100)
     unit = models.CharField(max_length=20)
     polygons = models.IntegerField()
