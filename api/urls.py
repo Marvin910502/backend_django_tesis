@@ -17,6 +17,7 @@ from api.endpoints import (
                            GetProfileImage,
                            GetIcon,
                            GetImage,
+                           GetMaxMinData,
                           )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -38,6 +39,7 @@ urlpatterns = [
     # Plot data endpoints
     path('2d-variables-maps/', TwoDimensionsVariablesMaps.as_view(), name='2d_variables_maps'),
     path('cross-sections/', CrossSections.as_view(), name='cross_sections'),
+    path('get-max-min/<str:username>/', GetMaxMinData.as_view(), name='get_max_min'),
     # File manager endpoints
     path('get-wrfout-list/', GetListFiles.as_view(), name='get_wrfout_list'),
     path('upload-file/', SaveFile.as_view(), name='upload_file'),

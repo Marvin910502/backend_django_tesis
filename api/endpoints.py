@@ -28,7 +28,7 @@ from wrf import getvar, latlon_coords
 
 
 # Selectors
-from api.type_data import MAPS_RESULT_2D, MAPS_DIAGNOSTICS_2D_LABEL, MAPS_UNITS_LABEL, MAPS_UNITS_TAGS, DEFAULT_UNIT_DIAGNOSTICS
+from api.type_data import MAPS_RESULT_2D, MAPS_DIAGNOSTICS_2D_LABEL, MAPS_UNITS_LABEL, MAPS_UNITS_TAGS, DEFAULT_UNIT_DIAGNOSTICS, DIAG_DEFAULTS_UNITS
 
 
 # Auth endpoints -------------------------------------------------------------------------------------------------------
@@ -42,6 +42,52 @@ def get_serialized_meta_data(request):
     meta_data = {k: str(v) for k, v in request.stream.META.items()}
     serialized_meta_data = json.dumps(meta_data)
     return serialized_meta_data
+
+
+def create_max_min_data(diagnostic, diagnostics):
+    max_list = []
+    min_list = []
+    dates = []
+    current_diagnostics = diagnostics.filter(diagnostic=diagnostic).order_by('date_time')
+    # count = 0
+    # max = None
+    # min = None
+    # for diag in current_diagnostics:
+    #     if count == 0:
+    #         dates.append(diag.date_time.date())
+    #         max = diag.maximum
+    #         min = diag.minimum
+    #     else:
+    #         if dates[-1] != diag.date_time.date():
+    #             dates.append(diag.date_time.date())
+    #             max_list.append(max)
+    #             max = diag.maximum
+    #             min_list.append(min)
+    #             min = diag.minimum
+    #         else:
+    #             if max < diag.maximum:
+    #                 max = diag.maximum
+    #             if min > diag.minimum:
+    #                 min = diag.minimum
+    #     if current_diagnostics.last().id == diag.id:
+    #         max_list.append(diag.maximum)
+    #         min_list.append(diag.minimum)
+    #     count += 1
+
+    for diag in current_diagnostics:
+        max_list.append(diag.maximum)
+        min_list.append(diag.minimum)
+        dates.append(diag.date_time)
+
+    max_min_data = {
+        'diag_label': MAPS_DIAGNOSTICS_2D_LABEL[diagnostic],
+        'max_list': max_list,
+        'min_list': min_list,
+        'dates': dates,
+        'unit': DIAG_DEFAULTS_UNITS[diagnostic]
+    }
+
+    return max_min_data
 
 
 class GetUserData(APIView):
@@ -376,9 +422,14 @@ class TwoDimensionsVariablesMaps(APIView):
             for file in wrfout:
                 max_index = max_index + file.dimensions['Time'].size
 
+            maximum = None
+            minimum = None
+
             if data.get('diagnostic') in DEFAULT_UNIT_DIAGNOSTICS:
                 try:
                     diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index)
+                    maximum = round(diag.data.max(), 8)
+                    minimum = round(diag.data.min(), 8)
                 except:
                     Logs.objects.create(
                         action='2d_maps_data',
@@ -391,6 +442,9 @@ class TwoDimensionsVariablesMaps(APIView):
                     return Response({'error': 'The diagnostic extraction fail'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             else:
                 try:
+                    diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index)
+                    maximum = round(diag.data.max(), 8)
+                    minimum = round(diag.data.min(), 8)
                     diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index, units=units)
                 except:
                     Logs.objects.create(
@@ -403,8 +457,6 @@ class TwoDimensionsVariablesMaps(APIView):
                     )
                     return Response({'error': 'The diagnostic extraction fail'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-            maximum = round(diag.data.max(), 8)
-            minimum = round(diag.data.min(), 8)
             extra_max = 0.2*maximum/100
             intervals = round((maximum - minimum) / polygons, 8)
             lats, lons = latlon_coords(diag)
@@ -430,6 +482,8 @@ class TwoDimensionsVariablesMaps(APIView):
                 'date_time': pd.to_datetime(data_time),
                 'lat': round(diag.projection.moad_cen_lat, 0),
                 'lon': round(diag.projection.stand_lon, 0),
+                'maximum': maximum,
+                'minimum': minimum,
                 'success': 'The data went process',
             }
 
@@ -554,6 +608,26 @@ class CrossSections(APIView):
                 message="error: Something went wrong"
             )
             return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class GetMaxMinData(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request, username):
+        worker = Worker.objects.filter(user__username=username).first()
+        try:
+            diagnostics = Diagnostic.objects.filter(worker=worker)
+            data = []
+
+            for diagnostic in MAPS_DIAGNOSTICS_2D_LABEL.keys():
+                max_min = create_max_min_data(diagnostic, diagnostics)
+                data.append(max_min)
+
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception as error:
+            print(error)
+            return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 # Files manager endpoints ----------------------------------------------------------------------------------------------
 
@@ -717,6 +791,9 @@ class SaveDiagnostic(APIView):
             lat = data.get('lat')
             lon = data.get('lon')
             diagnostic = data.get('diagnostic')
+            map_palet = data.get('map_palet')
+            maximum = data.get('maximum')
+            minimum = data.get('minimum')
             date_time = data.get('date_time')
             units = data.get('units')
             polygons = data.get('polygons')
@@ -737,6 +814,9 @@ class SaveDiagnostic(APIView):
                     lat=lat,
                     lon=lon,
                     diagnostic=diagnostic,
+                    map_palet=map_palet,
+                    maximum=maximum,
+                    minimum=minimum,
                     date_time=date_time,
                     unit=units,
                     polygons=polygons,
@@ -797,6 +877,7 @@ class GetDiagnosticList(APIView):
                     'lon': diagnostic.lon,
                     'diagnostic_label': MAPS_DIAGNOSTICS_2D_LABEL[diagnostic.diagnostic],
                     'units_label': MAPS_UNITS_TAGS[diagnostic.unit],
+                    'map_palet': diagnostic.map_palet,
                     'polygons': diagnostic.polygons,
                     'file_name': diagnostic.file_name,
                     'diagnostic': diagnostic.diagnostic,
