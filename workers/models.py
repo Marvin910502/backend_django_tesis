@@ -30,6 +30,7 @@ class Diagnostic(models.Model):
     lat = models.FloatField()
     lon = models.FloatField()
     diagnostic = models.CharField(max_length=100)
+    date_time = models.DateTimeField(max_length=150, null=True, blank=True)
     unit = models.CharField(max_length=20)
     polygons = models.IntegerField()
     file_name = models.CharField(max_length=100)
