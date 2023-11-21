@@ -24,6 +24,9 @@ MAPS_DIAGNOSTICS_2D_LABEL = {
     'helicidad_corriente_ascendente': 'Helicidad de corriente ascendente',
 }
 
+
+DEFAULT_UNIT_DIAGNOSTICS = ['temperatura', 'helicidad_relativa_tormenta', 'agua_precipitable', 'humedad_relativa', 'helicidad_corriente_ascendente']
+
 MAPS_UNITS_LABEL = {
     'degC': 'degC',
     'degCT': 'degC',

@@ -3,6 +3,7 @@ import json
 import os
 import uuid
 from ipware import get_client_ip
+import pandas as pd
 
 # Rest Framework
 from rest_framework.views import APIView
@@ -27,7 +28,7 @@ from wrf import getvar, latlon_coords
 
 
 # Selectors
-from api.type_data import MAPS_RESULT_2D, MAPS_DIAGNOSTICS_2D_LABEL, MAPS_UNITS_LABEL, MAPS_UNITS_TAGS
+from api.type_data import MAPS_RESULT_2D, MAPS_DIAGNOSTICS_2D_LABEL, MAPS_UNITS_LABEL, MAPS_UNITS_TAGS, DEFAULT_UNIT_DIAGNOSTICS
 
 
 # Auth endpoints -------------------------------------------------------------------------------------------------------
@@ -375,7 +376,7 @@ class TwoDimensionsVariablesMaps(APIView):
             for file in wrfout:
                 max_index = max_index + file.dimensions['Time'].size
 
-            if 'default' in units:
+            if data.get('diagnostic') in DEFAULT_UNIT_DIAGNOSTICS:
                 try:
                     diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index)
                 except:
@@ -422,9 +423,11 @@ class TwoDimensionsVariablesMaps(APIView):
                 fill_opacity=0.5,
             )
 
+            data_time = diag.Time.values
             response = {
                 'geojson': geojson,
                 'max_index': max_index,
+                'date_time': pd.to_datetime(data_time),
                 'lat': round(diag.projection.moad_cen_lat, 0),
                 'lon': round(diag.projection.stand_lon, 0),
                 'success': 'The data went process',
@@ -439,7 +442,8 @@ class TwoDimensionsVariablesMaps(APIView):
                 message="success: The data went process"
             )
             return Response(response, status=status.HTTP_200_OK)
-        except:
+        except Exception as error:
+            print(error)
             Logs.objects.create(
                 action='2d_maps_data',
                 username=data.get('username'),
@@ -504,7 +508,7 @@ class CrossSections(APIView):
                 return Response({'error': 'No units data'}, status=status.HTTP_400_BAD_REQUEST)
 
             wrfout = [Dataset(url) for url in urls]
-            if 'default' in units:
+            if data.get('diagnostic') in DEFAULT_UNIT_DIAGNOSTICS:
                 diagnostic_data = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index)
             else:
                 diagnostic_data = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index, units=units)
@@ -539,7 +543,8 @@ class CrossSections(APIView):
                 message="success: The data went process"
             )
             return Response(response, status=status.HTTP_200_OK)
-        except:
+        except Exception as error:
+            print(error)
             Logs.objects.create(
                 action='cross_section_data',
                 username=data.get('username'),
@@ -712,6 +717,7 @@ class SaveDiagnostic(APIView):
             lat = data.get('lat')
             lon = data.get('lon')
             diagnostic = data.get('diagnostic')
+            date_time = data.get('date_time')
             units = data.get('units')
             polygons = data.get('polygons')
             file_name = data.get('file_name')
@@ -731,6 +737,7 @@ class SaveDiagnostic(APIView):
                     lat=lat,
                     lon=lon,
                     diagnostic=diagnostic,
+                    date_time=date_time,
                     unit=units,
                     polygons=polygons,
                     file_name=file_name,
@@ -793,6 +800,7 @@ class GetDiagnosticList(APIView):
                     'polygons': diagnostic.polygons,
                     'file_name': diagnostic.file_name,
                     'diagnostic': diagnostic.diagnostic,
+                    'date_time': diagnostic.date_time,
                     'units': diagnostic.unit,
                     'data': diagnostic.z,
                     'x': diagnostic.x,
