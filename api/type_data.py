@@ -12,6 +12,19 @@ MAPS_RESULT_2D = {
 }
 
 
+DIAG_DEFAULTS_UNITS = {
+    'punto_de_condensacion': 'grados C',
+    'temperatura': 'K',
+    'altura_del_terreno': 'm',
+    'temperatura_superior_nubes': 'grados C',
+    'helicidad_relativa_tormenta': 'm2',
+    'agua_precipitable': 'Kg',
+    'humedad_relativa': 'porciento',
+    'presion_nivel_del_mar': 'hPa',
+    'helicidad_corriente_ascendente': 'm2',
+}
+
+
 MAPS_DIAGNOSTICS_2D_LABEL = {
     'punto_de_condensacion': 'Punto de condensación',
     'temperatura': 'Temperatura',
