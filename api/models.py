@@ -35,7 +35,7 @@ class WRFoutFile(models.Model):
     def get_used_space(cls):
         used_space = 0
         for file in cls.objects.all():
-            used_space = + file.size
+            used_space = used_space + file.size
 
         used_space = round(used_space / 1000, 2)
         return used_space

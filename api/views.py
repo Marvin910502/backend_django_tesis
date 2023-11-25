@@ -2,59 +2,46 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
 
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
-from .serializers import UserSerializer
+
+from netCDF4 import Dataset
+from wrf import getvar, latlon_coords
+import matplotlib.pyplot as plt
+import geojsoncontour
+import numpy as np
 
 
-class RegisterView(APIView):
+class PruebaError(APIView):
     permission_classes = (permissions.AllowAny,)
 
-    @staticmethod
-    def post(request):
-        data = request.data
+    def post(self, request):
 
-        username = data['username']
-        password = data['password']
+        data = self.request.data
+        urls = data.get('urls')
+        diagnostic = data.get('diagnostic')
+        index = data.get('index')
+        units = data.get('units')
 
-        User.objects.create_user(
-            username=username,
-            email=username,
-            password=password
+        wrfout = [Dataset(url) for url in urls]
+        diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index, units=units)
+
+        maximum = round(diag.data.max(), 8)
+        minimum = round(diag.data.min(), 8)
+        extra_max = 0.2 * maximum / 100
+        intervals = round((maximum - minimum) / 10, 8)
+        lats, lons = latlon_coords(diag)
+
+        figure = plt.figure()
+        ax = figure.add_subplot(111)
+        lvl = np.around(np.arange(minimum, maximum + extra_max, intervals), 4)
+        contourf = ax.contourf(lons, lats, diag, levels=lvl, cmap='coolwarm')
+        plt.close('all')
+
+        geojson = geojsoncontour.contourf_to_geojson(
+            contourf=contourf,
+            min_angle_deg=3.0,
+            ndigits=3,
+            stroke_width=1,
+            fill_opacity=0.5,
         )
 
-        return Response({"success": "User create successfully"}, status=status.HTTP_201_CREATED)
-
-
-class LoadUserView(APIView):
-    permission_classes = (permissions.AllowAny,)
-
-    @staticmethod
-    def get(request):
-        try:
-            user = request.user
-            print(user)
-            user = UserSerializer(user)
-            return Response({"user": user.data}, status.HTTP_200_OK)
-        except:
-            return Response({'error': 'Something went wrong when trying load user'},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class LoginUserView(APIView):
-    permission_classes = (permissions.AllowAny,)
-
-    @staticmethod
-    def post(request):
-        try:
-            data = request.data
-            email = data['username']
-            password = data['password']
-            user = User.objects.filter(username=email).first()
-            if authenticate(username=email, password=password):
-                login(request, user)
-                return Response({'success': 'User login in successfully'}, status.HTTP_200_OK)
-        except:
-            return Response({'error': 'Something went wrong when user try to login'},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        return Response(status=status.HTTP_200_OK)

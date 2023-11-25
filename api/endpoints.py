@@ -463,9 +463,9 @@ class TwoDimensionsVariablesMaps(APIView):
 
             figure = plt.figure()
             ax = figure.add_subplot(111)
+            plt.close('all')
             lvl = np.around(np.arange(minimum, maximum + extra_max, intervals), 4)
             contourf = ax.contourf(lons, lats, diag, levels=lvl, cmap=map_palet)
-            plt.close('all')
 
             geojson = geojsoncontour.contourf_to_geojson(
                 contourf=contourf,
@@ -680,7 +680,7 @@ class SaveFile(APIView):
         data = self.request.data
         try:
             file = data.get('file')
-            file_name = file.name.replace(' ', '_').replace('(', '').replace(')', '').replace('[', '').replace(']', '')
+            file_name = file.name.replace(' ', '_').replace('(', '').replace(')', '').replace('[', '').replace(']', '').replace(':', '')
             content = Content.objects.first()
 
             valid_space = (content.server_space - WRFoutFile.get_used_space()) - round(file.size/1000000000, 2)

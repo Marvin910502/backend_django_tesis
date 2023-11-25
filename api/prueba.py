@@ -1,39 +1,31 @@
-from netCDF4 import Dataset
-from wrf import getvar, latlon_coords
-import matplotlib.pyplot as plt
-import geojsoncontour
-import numpy as np
+import requests
 
-urls = [
+
+wrf_urls = [
     '/home/marvin/PycharmProject/projects/backend_django_tesis/wrfout_files/wrfout_d01_2005-08-28_00_00_00',
     '/home/marvin/PycharmProject/projects/backend_django_tesis/wrfout_files/wrfout_d01_2005-08-28_12_00_00',
 
 ]
 
+url = 'http://127.0.0.1:8000/api/prueba-error/'
+
+post_data = {
+    'urls': wrf_urls,
+    'diagnostic': 'slp',
+    'units': 'Pa',
+    'index': 0,
+}
+
+
+
 for i in range(1000):
-    wrfout = [Dataset(url) for url in urls]
-    diagnostic = 'slp'
-    units = 'Pa'
-    index = 0
-    diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index, units=units)
 
-    maximum = round(diag.data.max(), 8)
-    minimum = round(diag.data.min(), 8)
-    extra_max = 0.2 * maximum / 100
-    intervals = round((maximum - minimum) / 10, 8)
-    lats, lons = latlon_coords(diag)
+    response = requests.post(url, json=post_data, headers={'Content-Type': 'application/json'})
 
-    figure = plt.figure()
-    ax = figure.add_subplot(111)
-    lvl = np.around(np.arange(minimum, maximum + extra_max, intervals), 4)
-    contourf = ax.contourf(lons, lats, diag, levels=lvl, cmap='coolwarm')
-    plt.close('all')
+    if response.status_code == 200:
+        print('success')
+    else:
+        print('error')
 
-    geojson = geojsoncontour.contourf_to_geojson(
-        contourf=contourf,
-        min_angle_deg=3.0,
-        ndigits=3,
-        stroke_width=1,
-        fill_opacity=0.5,
-    )
+
 

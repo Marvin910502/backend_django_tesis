@@ -17,8 +17,9 @@ from api.endpoints import (
                            GetProfileImage,
                            GetIcon,
                            GetImage,
-                           GetMaxMinData,
+                           GetMaxMinData
                           )
+from api.views import PruebaError
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -51,5 +52,7 @@ urlpatterns = [
     # Content data endpoints
     path('get-content/', GetContent.as_view(), name='get_content'),
     path('media/get-icon/<str:filename>', GetIcon.as_view(), name='get-icon'),
-    path('media/get-image/<str:filename>', GetImage.as_view(), name='get-image')
+    path('media/get-image/<str:filename>', GetImage.as_view(), name='get-image'),
+    # PruebaError
+    path('prueba-error/', PruebaError.as_view(), name='prueba_error'),
 ]
