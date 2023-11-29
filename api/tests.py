@@ -1,11 +1,7 @@
 import json
 
 from django.test import TestCase
-
-# Create your tests here.
-
-from django.test import Client, TestCase
-from django.urls import reverse, NoReverseMatch
+from django.urls import reverse
 from backend_django_tesis.settings import BASE_DIR
 
 
