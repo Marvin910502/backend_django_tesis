@@ -416,7 +416,10 @@ class TwoDimensionsVariablesMaps(APIView):
                 )
                 return Response({'error': 'No polygons data'}, status=status.HTTP_400_BAD_REQUEST)
 
-            wrfout = [Dataset(url) for url in urls]
+            try:
+                wrfout = [Dataset(url) for url in urls]
+            except Exception as error:
+                print(error)
 
             max_index = 0
             for file in wrfout:
@@ -428,6 +431,8 @@ class TwoDimensionsVariablesMaps(APIView):
             if data.get('diagnostic') in DEFAULT_UNIT_DIAGNOSTICS:
                 try:
                     diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index)
+                    maximum_default = round(diag.data.max(), 8)
+                    minimum_default = round(diag.data.min(), 8)
                     maximum = round(diag.data.max(), 8)
                     minimum = round(diag.data.min(), 8)
                 except:
@@ -443,9 +448,11 @@ class TwoDimensionsVariablesMaps(APIView):
             else:
                 try:
                     diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index)
+                    maximum_default = round(diag.data.max(), 8)
+                    minimum_default = round(diag.data.min(), 8)
+                    diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index, units=units)
                     maximum = round(diag.data.max(), 8)
                     minimum = round(diag.data.min(), 8)
-                    diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index, units=units)
                 except:
                     Logs.objects.create(
                         action='2d_maps_data',
@@ -482,8 +489,8 @@ class TwoDimensionsVariablesMaps(APIView):
                 'date_time': pd.to_datetime(data_time),
                 'lat': round(diag.projection.moad_cen_lat, 0),
                 'lon': round(diag.projection.stand_lon, 0),
-                'maximum': maximum,
-                'minimum': minimum,
+                'maximum': maximum_default,
+                'minimum': minimum_default,
                 'success': 'The data went process',
             }
 
@@ -495,6 +502,8 @@ class TwoDimensionsVariablesMaps(APIView):
                 ip=get_user_ip(self.request),
                 message="success: The data went process"
             )
+            for file in wrfout:
+                file.close()
             return Response(response, status=status.HTTP_200_OK)
         except Exception as error:
             print(error)
@@ -596,6 +605,9 @@ class CrossSections(APIView):
                 ip=get_user_ip(self.request),
                 message="success: The data went process"
             )
+
+            for file in wrfout:
+                file.close()
             return Response(response, status=status.HTTP_200_OK)
         except Exception as error:
             print(error)
@@ -872,6 +884,47 @@ class GetDiagnosticList(APIView):
             response = []
             for diagnostic in diagnostics:
                 response.append({
+                    'diagnostic_id': diagnostic.id,
+                    'diagnostic_label': MAPS_DIAGNOSTICS_2D_LABEL[diagnostic.diagnostic],
+                    'units_label': MAPS_UNITS_TAGS[diagnostic.unit],
+                    'map_palet': diagnostic.map_palet,
+                    'file_name': diagnostic.file_name,
+                    'diagnostic': diagnostic.diagnostic,
+                    'date_time': diagnostic.date_time,
+                    'units': diagnostic.unit,
+                })
+
+            Logs.objects.create(
+                action='get_diagnostics',
+                username=data.get('username'),
+                metadata=get_serialized_meta_data(self.request),
+                status_code='200',
+                ip=get_user_ip(self.request),
+                message="success"
+            )
+            return Response(response, status=status.HTTP_200_OK)
+        except Exception as error:
+            print(error)
+            Logs.objects.create(
+                action='get_diagnostics',
+                username=data.get('username'),
+                metadata=get_serialized_meta_data(self.request),
+                status_code='500',
+                ip=get_user_ip(self.request),
+                message="error: Something went wrong"
+            )
+            return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class GetDiagnostic(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        data = self.request.data
+        try:
+            diagnostic_id = data.get('diagnostic_id')
+            diagnostic = Diagnostic.objects.filter(id=diagnostic_id).first()
+            response = {
                     'geojson': diagnostic.geojson,
                     'lat': diagnostic.lat,
                     'lon': diagnostic.lon,
@@ -890,26 +943,10 @@ class GetDiagnosticList(APIView):
                     'max_x': diagnostic.max_x,
                     'min_y': diagnostic.min_y,
                     'max_y': diagnostic.max_y
-                })
-
-            Logs.objects.create(
-                action='get_diagnostics',
-                username=data.get('username'),
-                metadata=get_serialized_meta_data(self.request),
-                status_code='200',
-                ip=get_user_ip(self.request),
-                message="success"
-            )
+                }
             return Response(response, status=status.HTTP_200_OK)
-        except:
-            Logs.objects.create(
-                action='get_diagnostics',
-                username=data.get('username'),
-                metadata=get_serialized_meta_data(self.request),
-                status_code='500',
-                ip=get_user_ip(self.request),
-                message="error: Something went wrong"
-            )
+        except Exception as error:
+            print(error)
             return Response({'error': 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
