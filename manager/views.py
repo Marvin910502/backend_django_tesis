@@ -4,6 +4,8 @@ import uuid
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Q
 from backend_django_tesis.settings import LOGIN_URL, MEDIA_PROFILES_URL, MEDIA_ICONS_URL, MEDIA_IMAGES_URL
 
 from workers.models import Worker, Diagnostic
@@ -456,12 +458,37 @@ def page_404(request):
 
 
 @login_required(login_url=LOGIN_URL)
-def logs(request, order):
+def logs(request, order, index, filter_search):
     data = amounts_data()
     content = data.get('content')
+    pages = Paginator(Logs.objects.all().order_by(order), 15)
+    page = pages.page(index)
+    previous_page = index - 1
+    next_page = index + 1
+
+    if request.method == 'POST':
+        filter_search = request.POST.get('search')
+        if filter_search:
+            pages = Paginator(Logs.objects.filter(Q(username__contains=filter_search) | Q(action__contains=filter_search) | Q(ip__contains=filter_search) | Q(message__contains=filter_search) | Q(status_code=filter_search)).order_by(order), 15)
+            index = 1
+            page = pages.page(index)
+        else:
+            filter_search = 'None'
+
+    if filter_search != 'None':
+        pages = Paginator(Logs.objects.filter(Q(username__contains=filter_search) | Q(action__contains=filter_search) | Q(ip__contains=filter_search) | Q(message__contains=filter_search) | Q(status_code=filter_search)).order_by(order), 15)
+        page = pages.page(index)
 
     context = {
-        'logs': Logs.objects.all().order_by(order),
+        'page': page,
+        'pages': pages,
+        'order': order,
+        'index': index,
+        'max_index': pages.num_pages,
+        'max_index_bellow': pages.num_pages - 4,
+        'previous_page': previous_page,
+        'next_page': next_page,
+        'filter_search': filter_search,
         'users_amount': data.get('workers').__len__(),
         'diagnostics_amount': data.get('diagnostics').__len__(),
         'files_amount': data.get('files').__len__(),

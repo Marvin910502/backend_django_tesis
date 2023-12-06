@@ -5,6 +5,7 @@ from api.endpoints import (
                            GetListFiles,
                            GetUserData,
                            SaveDiagnostic,
+                           GetDiagnostic,
                            GetDiagnosticList,
                            DeleteDiagnostic,
                            SaveFile,
@@ -48,6 +49,7 @@ urlpatterns = [
     # Worker data endpoints
     path('save-diagnostic/', SaveDiagnostic.as_view(), name='save_map_data'),
     path('get-diagnostic-list/', GetDiagnosticList.as_view(), name='get_list_map_data'),
+    path('get-diagnostic/', GetDiagnostic.as_view(), name='get_diagnostic'),
     path('delete-diagnostic/', DeleteDiagnostic.as_view(), name='delete_map_data'),
     # Content data endpoints
     path('get-content/', GetContent.as_view(), name='get_content'),

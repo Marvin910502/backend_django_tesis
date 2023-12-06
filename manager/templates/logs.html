@@ -6,22 +6,29 @@
         <div class="card mt-3 mb-5">
             <div class="card-header flex-row">
                 <h3 class="float-start">Registros</h3>
+                <div class="float-end">
+                    <form class="d-flex" role="search" method="post">
+                        {% csrf_token %}
+                        <input class="form-control me-2" type="search" name="search" {% if filter_search != 'None' %}value="{{ filter_search }}"{% endif %} placeholder="Buscar...">
+                        <button class="btn btn-outline-success" type="submit"><i class="fa fa-search"></i></button>
+                    </form>
+                </div>
             </div>
             <div class="card-body">
                 <div class="row">
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'action' %}">Acción <i class="fa-regular fa-sort"></i></a></th>
-                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'username' %}">Usuario <i class="fa-regular fa-sort"></i></a></th>
-                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'ip' %}">IP <i class="fa-regular fa-sort"></i></a></th>
-                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'date_time' %}">Fecha y Hora <i class="fa-regular fa-sort"></i></a></th>
-                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'status_code' %}">Estatus <i class="fa-regular fa-sort"></i></a></th>
-                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'message' %}">Mensaje <i class="fa-regular fa-sort"></i></a></th>
+                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'action' index filter_search %}">Acción <i class="fa-regular fa-sort"></i></a></th>
+                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'username' index filter_search %}">Usuario <i class="fa-regular fa-sort"></i></a></th>
+                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'ip' index filter_search %}">IP <i class="fa-regular fa-sort"></i></a></th>
+                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'date_time' index filter_search %}">Fecha y Hora <i class="fa-regular fa-sort"></i></a></th>
+                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'status_code' index filter_search %}">Estatus <i class="fa-regular fa-sort"></i></a></th>
+                              <th scope="col"><a class="text-decoration-none" href="{% url 'logs' 'message' index filter_search %}">Mensaje <i class="fa-regular fa-sort"></i></a></th>
                             </tr>
                           </thead>
                           <tbody>
-                            {% for log in logs %}
+                            {% for log in page.object_list %}
                             <tr>
                               <th>{{ log.action }}</th>
                               <th>{{ log.username }}</th>
@@ -33,6 +40,15 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    <ul class="pagination">
+                        {% if page.has_previous %}<li class="page-item"><a href="{% url 'logs' order previous_page filter_search %}" class="page-link"><i class="fa fa-chevron-left"></i></a></li>{% endif %}
+                            {% if index > 5 %}<li class="page-item"><a href="{% url 'logs' order 1 filter_search %}" class="page-link flex-row"><i class="fa fa-angles-left"></i></a></li>{% endif %}
+                            {% for page_number in pages.page_range %}
+                                {% if page_number > index|add:-5 and page_number < index|add:5 %}<li {% if page_number == index %}class="page-item active" {% else %} class="page-item" {% endif %}><a href="{% url 'logs' order page_number filter_search %}" class="page-link">{{ page_number }}</a></li>{% endif %}
+                            {% endfor %}
+                            {% if index < max_index_bellow %}<li class="page-item"><a href="{% url 'logs' order max_index filter_search %}" class="page-link flex-row"><i class="fa fa-angles-right"></i></a></li>{% endif %}
+                        {% if page.has_next %}<li class="page-item"><a href="{% url 'logs' order next_page filter_search %}" class="page-link"><i class="fa fa-chevron-right"></i></a></li>{% endif %}
+                    </ul>
                 </div>
             </div>
         </div>
