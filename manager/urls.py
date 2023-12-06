@@ -12,5 +12,5 @@ urlpatterns = [
     path('contenidos/', views.manage_contents, name='manager_contents'),
     path('configuraciones', views.manage_configurations, name='manager_configuration'),
     path('delete-images-site/<str:image>/', views.delete_image_site, name='delete_images_site'),
-    path('registros/<str:order>', views.logs, name='logs')
+    path('registros/<str:order>/<int:index>/<str:filter_search>/', views.logs, name='logs')
 ]
