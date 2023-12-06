@@ -49,30 +49,6 @@ def create_max_min_data(diagnostic, diagnostics):
     min_list = []
     dates = []
     current_diagnostics = diagnostics.filter(diagnostic=diagnostic).order_by('date_time')
-    # count = 0
-    # max = None
-    # min = None
-    # for diag in current_diagnostics:
-    #     if count == 0:
-    #         dates.append(diag.date_time.date())
-    #         max = diag.maximum
-    #         min = diag.minimum
-    #     else:
-    #         if dates[-1] != diag.date_time.date():
-    #             dates.append(diag.date_time.date())
-    #             max_list.append(max)
-    #             max = diag.maximum
-    #             min_list.append(min)
-    #             min = diag.minimum
-    #         else:
-    #             if max < diag.maximum:
-    #                 max = diag.maximum
-    #             if min > diag.minimum:
-    #                 min = diag.minimum
-    #     if current_diagnostics.last().id == diag.id:
-    #         max_list.append(diag.maximum)
-    #         min_list.append(diag.minimum)
-    #     count += 1
 
     for diag in current_diagnostics:
         max_list.append(diag.maximum)
