@@ -40,15 +40,20 @@
                             {% endfor %}
                         </tbody>
                     </table>
-                    <ul class="pagination">
-                        {% if page.has_previous %}<li class="page-item"><a href="{% url 'logs' order previous_page filter_search %}" class="page-link"><i class="fa fa-chevron-left"></i></a></li>{% endif %}
-                            {% if index > 5 %}<li class="page-item"><a href="{% url 'logs' order 1 filter_search %}" class="page-link flex-row"><i class="fa fa-angles-left"></i></a></li>{% endif %}
-                            {% for page_number in pages.page_range %}
-                                {% if page_number > index|add:-5 and page_number < index|add:5 %}<li {% if page_number == index %}class="page-item active" {% else %} class="page-item" {% endif %}><a href="{% url 'logs' order page_number filter_search %}" class="page-link">{{ page_number }}</a></li>{% endif %}
-                            {% endfor %}
-                            {% if index < max_index_bellow %}<li class="page-item"><a href="{% url 'logs' order max_index filter_search %}" class="page-link flex-row"><i class="fa fa-angles-right"></i></a></li>{% endif %}
-                        {% if page.has_next %}<li class="page-item"><a href="{% url 'logs' order next_page filter_search %}" class="page-link"><i class="fa fa-chevron-right"></i></a></li>{% endif %}
-                    </ul>
+                    <div class="flex-row">
+                        <ul class="pagination float-start">
+                            {% if page.has_previous %}<li class="page-item"><a href="{% url 'logs' order previous_page filter_search %}" class="page-link"><i class="fa fa-chevron-left"></i></a></li>{% endif %}
+                                {% if index > 5 %}<li class="page-item"><a href="{% url 'logs' order 1 filter_search %}" class="page-link flex-row"><i class="fa fa-angles-left"></i></a></li>{% endif %}
+                                {% for page_number in pages.page_range %}
+                                    {% if page_number > index|add:-5 and page_number < index|add:5 %}<li {% if page_number == index %}class="page-item active" {% else %} class="page-item" {% endif %}><a href="{% url 'logs' order page_number filter_search %}" class="page-link">{{ page_number }}</a></li>{% endif %}
+                                {% endfor %}
+                                {% if index < max_index_bellow %}<li class="page-item"><a href="{% url 'logs' order max_index filter_search %}" class="page-link flex-row"><i class="fa fa-angles-right"></i></a></li>{% endif %}
+                            {% if page.has_next %}<li class="page-item"><a href="{% url 'logs' order next_page filter_search %}" class="page-link"><i class="fa fa-chevron-right"></i></a></li>{% endif %}
+                        </ul>
+                        <span class="float-end me-3">Total de registros: {{ logs_number }} / Total de páginas: {{ max_index }}</span>
+                    </div>
+
+
                 </div>
             </div>
         </div>

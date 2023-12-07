@@ -384,6 +384,8 @@ def manage_configurations(request):
             card_my_diagnostics_image.name = uuid.uuid4().__str__()
             content.card_my_diagnostics_image = card_my_diagnostics_image
             content.card_my_diagnostics_image_name = card_my_diagnostics_image.name
+        message = 'Las configuraciones fueron guardadas'
+        class_alert = SUCCESS_MESSAGE
         content.save()
         data = amounts_data()
 
@@ -461,7 +463,8 @@ def page_404(request):
 def logs(request, order, index, filter_search):
     data = amounts_data()
     content = data.get('content')
-    pages = Paginator(Logs.objects.all().order_by(order), 15)
+    logs = Logs.objects.all().order_by(order)
+    pages = Paginator(logs, 15)
     page = pages.page(index)
     previous_page = index - 1
     next_page = index + 1
@@ -469,15 +472,19 @@ def logs(request, order, index, filter_search):
     if request.method == 'POST':
         filter_search = request.POST.get('search')
         if filter_search:
-            pages = Paginator(Logs.objects.filter(Q(username__contains=filter_search) | Q(action__contains=filter_search) | Q(ip__contains=filter_search) | Q(message__contains=filter_search) | Q(status_code=filter_search)).order_by(order), 15)
+            logs = Logs.objects.filter(Q(username__contains=filter_search) | Q(action__contains=filter_search) | Q(ip__contains=filter_search) | Q(message__contains=filter_search) | Q(status_code=filter_search)).order_by(order)
+            pages = Paginator(logs, 15)
             index = 1
             page = pages.page(index)
         else:
             filter_search = 'None'
 
     if filter_search != 'None':
-        pages = Paginator(Logs.objects.filter(Q(username__contains=filter_search) | Q(action__contains=filter_search) | Q(ip__contains=filter_search) | Q(message__contains=filter_search) | Q(status_code=filter_search)).order_by(order), 15)
+        logs = Logs.objects.filter(Q(username__contains=filter_search) | Q(action__contains=filter_search) | Q(ip__contains=filter_search) | Q(message__contains=filter_search) | Q(status_code=filter_search)).order_by(order)
+        pages = Paginator(logs, 15)
         page = pages.page(index)
+
+    logs_number = logs.__len__()
 
     context = {
         'page': page,
@@ -488,6 +495,7 @@ def logs(request, order, index, filter_search):
         'max_index_bellow': pages.num_pages - 4,
         'previous_page': previous_page,
         'next_page': next_page,
+        'logs_number': logs_number,
         'filter_search': filter_search,
         'users_amount': data.get('workers').__len__(),
         'diagnostics_amount': data.get('diagnostics').__len__(),
