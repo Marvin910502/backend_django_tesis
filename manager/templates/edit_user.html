@@ -93,7 +93,7 @@
 
         function validate(password){
           if (password.length < 8) {
-                document.getElementById('invalid_password').innerText = "La nueva contraseña es requerida, debe contener un mínimo de 8 caracteres y no puede ser igual a la contraseña actual"
+                document.getElementById('invalid_password').innerText = "La nueva contraseña es requerida, debe contener un mínimo de 8 caracteres"
                 valid2 = false
                 button_validate(valid2, valid3)
           }
@@ -107,7 +107,7 @@
         function compare(password, re_password){
             console.log(re_password)
           if (password !== re_password || !re_password) {
-                document.getElementById('invalid_re_password').innerText = "La contraseña repetida no coincide con la contraseña"
+                document.getElementById('invalid_re_password').innerText = "La contraseña repetida no coincide con la nueva contraseña"
                 valid3 = false
                 button_validate(valid2, valid3)
           }

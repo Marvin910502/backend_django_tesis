@@ -299,6 +299,8 @@ def manage_contents(request):
         content.card_my_diagnostics = card_my_diagnostics
         content.help_content = help_content
         content.save()
+        message = 'Los contenidos han sido guardados con éxito'
+        class_alert = SUCCESS_MESSAGE
 
     context = {
         'icon': content.icon.url if content.icon else '',

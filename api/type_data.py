@@ -33,7 +33,7 @@ MAPS_DIAGNOSTICS_2D_LABEL = {
     'helicidad_relativa_tormenta': 'Helicidad relativa de tormenta',
     'agua_precipitable': 'Agua precipitable',
     'humedad_relativa': 'Humedad relativa',
-    'presion_nivel_del_mar': 'Presion a nivel del mar',
+    'presion_nivel_del_mar': 'Presión a nivel del mar',
     'helicidad_corriente_ascendente': 'Helicidad de corriente ascendente',
 }
 
