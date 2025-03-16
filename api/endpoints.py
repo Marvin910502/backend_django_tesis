@@ -77,6 +77,7 @@ class GetUserData(APIView):
             response = {
                 'name': worker.name,
                 'last_names': worker.last_names,
+                'username': data.get('username'),
                 'department': worker.department,
                 'isAdmin': worker.isAdmin,
                 'isGuess': worker.isGuess,

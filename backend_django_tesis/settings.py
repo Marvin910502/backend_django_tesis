@@ -30,7 +30,7 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = [env("ALLOWED_HOSTS"), env("ALLOWED_HOSTS_2")]
+ALLOWED_HOSTS = [env("ALLOWED_HOSTS"), env("ALLOWED_HOSTS_2"), env("ALLOWED_HOSTS_3")]
 
 LOGIN_URL = reverse_lazy('login_admin')
 LOGOUT_URL = reverse_lazy('login_admin')
