@@ -66,18 +66,30 @@ def create_max_min_data(diagnostic, diagnostics):
     return max_min_data
 
 
+class TestAuthView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        return Response({
+            "message": "Autenticado correctamente",
+            "user_id": request.user.id,
+            "username": request.user.username,
+            "email": request.user.email
+        })
+
+
 class GetUserData(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         data = self.request.data
         try:
-            user = User.objects.filter(username=data.get('username')).first()
+            user = request.user
             worker = user.worker_set.first()
             response = {
                 'name': worker.name,
                 'last_names': worker.last_names,
-                'username': data.get('username'),
+                'username': user.email,
                 'department': worker.department,
                 'isAdmin': worker.isAdmin,
                 'isGuess': worker.isGuess,
@@ -107,7 +119,7 @@ class GetUserData(APIView):
 
 
 class RegisterView(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         data = self.request.data
@@ -118,7 +130,7 @@ class RegisterView(APIView):
             last_names = data.get('last_names')
             department = data.get('department')
 
-            if User.objects.filter(username=username).first():
+            if request.user:
                 Logs.objects.create(
                     action='create_user',
                     username=data.get('username'),
@@ -165,12 +177,12 @@ class RegisterView(APIView):
 
 
 class UploadProfileImage(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         data = self.request.data
         try:
-            user = User.objects.filter(username=data.get('username')).first()
+            user = request.user
             worker = Worker.objects.filter(user=user).first()
             file = data.get('file')
             file.name = uuid.uuid4().__str__()
@@ -208,7 +220,7 @@ class UploadProfileImage(APIView):
 
 
 class GetProfileImage(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, filename):
         try:
@@ -224,20 +236,25 @@ class GetProfileImage(APIView):
 
 
 class UpdateUser(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         data = self.request.data
         try:
-            old_username = data['old_username']
             username = data['username']
             name = data['name']
             last_names = data['last_names']
-            department = data['department']
+            file = data.get('file')
+            file.name = uuid.uuid4().__str__()
 
-            user = User.objects.filter(username=old_username).first()
+            user = request.user
             if user:
                 worker = user.worker_set.first()
+                try:
+                    os.remove(f"{MEDIA_PROFILES_URL}/{worker.image_name}")
+                except Exception as error:
+                    print(error)
+                    worker.image_name = ''
 
                 user.username = username
                 user.email = username
@@ -245,7 +262,8 @@ class UpdateUser(APIView):
 
                 worker.name = name
                 worker.last_names = last_names
-                worker.department = department
+                worker.profile_image = file
+                worker.image_name = file.name
                 worker.save()
 
                 Logs.objects.create(
@@ -280,7 +298,7 @@ class UpdateUser(APIView):
 
 
 class ChangePasswd(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         data = self.request.data
@@ -330,7 +348,7 @@ class ChangePasswd(APIView):
 
 
 class TwoDimensionsVariablesMaps(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         data = self.request.data
@@ -496,7 +514,7 @@ class TwoDimensionsVariablesMaps(APIView):
 
 
 class CrossSections(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         data = self.request.data
@@ -600,7 +618,7 @@ class CrossSections(APIView):
 
 
 class GetMaxMinData(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, username):
         worker = Worker.objects.filter(user__username=username).first()
@@ -622,7 +640,7 @@ class GetMaxMinData(APIView):
 
 
 class GetListFiles(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         WRFoutFile.refresh_list_of_files()
@@ -663,7 +681,7 @@ class GetListFiles(APIView):
 
 
 class SaveFile(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         data = self.request.data
@@ -739,7 +757,7 @@ class SaveFile(APIView):
 
 
 class DeleteFile(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         data = self.request.data
@@ -770,7 +788,7 @@ class DeleteFile(APIView):
 
 
 class SaveDiagnostic(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         data = self.request.data
@@ -851,7 +869,7 @@ class SaveDiagnostic(APIView):
 
 
 class GetDiagnosticList(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         data = self.request.data
@@ -894,7 +912,7 @@ class GetDiagnosticList(APIView):
 
 
 class GetDiagnostic(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         data = self.request.data
@@ -928,7 +946,7 @@ class GetDiagnostic(APIView):
 
 
 class DeleteDiagnostic(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         data = self.request.data
@@ -961,7 +979,7 @@ class DeleteDiagnostic(APIView):
 # Contents endpoint ----------------------------------------------------------------------------------------------------
 
 class GetContent(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request):
         try:
@@ -986,7 +1004,7 @@ class GetContent(APIView):
 
 
 class GetIcon(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, filename):
         try:
@@ -1002,7 +1020,7 @@ class GetIcon(APIView):
 
 
 class GetImage(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, filename):
         try:
