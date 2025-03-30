@@ -4,6 +4,7 @@ import os
 import uuid
 from ipware import get_client_ip
 import pandas as pd
+import mimetypes
 
 # Rest Framework
 from rest_framework.views import APIView
@@ -13,7 +14,7 @@ from rest_framework import permissions, status
 # Django
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from api.models import WRFoutFile
 from workers.models import Worker, Diagnostic
 from manager.models import Content, Logs
@@ -220,19 +221,24 @@ class UploadProfileImage(APIView):
 
 
 class GetProfileImage(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.AllowAny,)
 
     def get(self, request, filename):
         try:
             image_path = os.path.join(MEDIA_PROFILES_URL, filename)
-            try:
-                with open(image_path, 'rb') as img:
-                    return HttpResponse(img.read(), content_type='image/jpg')
-            except:
-                with open(f'{MEDIA_PROFILES_URL}/default.png', 'rb') as img:
-                    return HttpResponse(img.read(), content_type='image/svg')
-        except:
-            return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            content_type, _ = mimetypes.guess_type(image_path)
+
+            if os.path.exists(image_path):
+                return FileResponse(open(image_path, 'rb'), content_type=content_type)
+
+            default_svg = os.path.join(MEDIA_PROFILES_URL, 'account.svg')
+            if os.path.exists(default_svg):
+                return FileResponse(open(default_svg, 'rb'), content_type=content_type)
+
+            return Response({"error": "Imagen por defecto no encontrada"}, status=404)
+
+        except Exception as e:
+            return Response({"error": f"Error al leer la imagen: {str(e)}"}, status=500)
 
 
 class UpdateUser(APIView):
@@ -244,17 +250,20 @@ class UpdateUser(APIView):
             username = data['username']
             name = data['name']
             last_names = data['last_names']
-            file = data.get('file')
-            file.name = uuid.uuid4().__str__()
 
             user = request.user
             if user:
                 worker = user.worker_set.first()
-                try:
-                    os.remove(f"{MEDIA_PROFILES_URL}/{worker.image_name}")
-                except Exception as error:
-                    print(error)
-                    worker.image_name = ''
+                file = data.get('file')
+                if file:
+                    file.name = uuid.uuid4().__str__()
+                    try:
+                        os.remove(f"{MEDIA_PROFILES_URL}/{worker.image_name}")
+                    except Exception as error:
+                        print(error)
+                        worker.image_name = ''
+                    worker.profile_image = file
+                    worker.image_name = file.name
 
                 user.username = username
                 user.email = username
@@ -262,19 +271,28 @@ class UpdateUser(APIView):
 
                 worker.name = name
                 worker.last_names = last_names
-                worker.profile_image = file
-                worker.image_name = file.name
                 worker.save()
 
+                response = {
+                    'name': worker.name,
+                    'last_names': worker.last_names,
+                    'username': user.email,
+                    'department': worker.department,
+                    'isAdmin': worker.isAdmin,
+                    'isGuess': worker.isGuess,
+                    'isManager': worker.isManager,
+                    'profile_image': worker.image_name
+                }
+
                 Logs.objects.create(
-                    action='update_user',
+                    action='update_user_data',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
-                    status_code='201',
+                    status_code='200',
                     ip=get_user_ip(self.request),
-                    message="success: User updated successfully"
+                    message="success"
                 )
-                return Response({'success': 'User updated successfully'}, status=status.HTTP_201_CREATED)
+                return Response(response, status=status.HTTP_200_OK)
             else:
                 Logs.objects.create(
                     action='update_user',
