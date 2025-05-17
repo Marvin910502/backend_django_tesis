@@ -372,10 +372,10 @@ class TwoDimensionsVariablesMaps(APIView):
         data = self.request.data
         try:
             urls = data.get('url')
-            diagnostic = MAPS_RESULT_2D.get(data.get('diagnostic'))
-            map_palet = data.get('map_palet')
+            diagnostic = data.get('diagnostic')
+            map_palette = data.get('map_palet')
             index = data.get('index')
-            units = MAPS_UNITS_LABEL.get(data.get('units'))
+            units = data.get('units')
             polygons = data.get('polygons')
 
             if not urls:
@@ -485,7 +485,7 @@ class TwoDimensionsVariablesMaps(APIView):
             ax = figure.add_subplot(111)
             plt.close('all')
             lvl = np.around(np.arange(minimum, maximum + extra_max, intervals), 4)
-            contourf = ax.contourf(lons, lats, diag, levels=lvl, cmap=map_palet)
+            contourf = ax.contourf(lons, lats, diag, levels=lvl, cmap=map_palette)
 
             geojson = geojsoncontour.contourf_to_geojson(
                 contourf=contourf,
@@ -497,14 +497,13 @@ class TwoDimensionsVariablesMaps(APIView):
 
             data_time = diag.Time.values
             response = {
-                'geojson': geojson,
+                'geojsonString': geojson,
                 'max_index': max_index,
                 'date_time': pd.to_datetime(data_time),
                 'lat': round(diag.projection.moad_cen_lat, 0),
-                'lon': round(diag.projection.stand_lon, 0),
+                'long': round(diag.projection.stand_lon, 0),
                 'maximum': maximum_default,
                 'minimum': minimum_default,
-                'success': 'The data went process',
             }
 
             Logs.objects.create(
@@ -539,8 +538,8 @@ class CrossSections(APIView):
         try:
             urls = data.get('url')
             index = data.get('index')
-            diagnostic = MAPS_RESULT_2D.get(data.get('diagnostic'))
-            units = MAPS_UNITS_LABEL.get(data.get('units'))
+            diagnostic = data.get('diagnostic')
+            units = data.get('units')
 
             if not urls:
                 Logs.objects.create(
@@ -601,13 +600,12 @@ class CrossSections(APIView):
 
             response = {
                 'data': json.dumps(diagnostic_array),
-                'longitudes': json.dumps(longitudes),
+                'lat': json.dumps(latitudes),
+                'long': json.dumps(longitudes),
                 'min_long': min_long,
                 'max_long': max_long,
-                'latitudes': json.dumps(latitudes),
                 'min_lat': min_lat,
                 'max_lat': max_lat,
-                'success': 'The data went process',
             }
 
             Logs.objects.create(

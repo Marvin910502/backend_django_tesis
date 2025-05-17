@@ -1,5 +1,5 @@
 .idea
-/backend_django_tesis/.env
+/.env
 ./wrf_app/wrf_files/
 ./wrfout_files/*
 /wrfout_files/*
