@@ -670,6 +670,7 @@ class GetListFiles(APIView):
                     path = file.path_string
                 list_file.append(
                     {
+                        'id': file.id,
                         'name': file.name,
                         'path': path,
                         'size': file.size,
