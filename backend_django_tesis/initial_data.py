@@ -27,3 +27,250 @@ initial_content = {
     'card_my_diagnostics': '<p>Aquí puedes consultar los diagnósticos que hayas guardado directo de la base de datos sin necesidad de un archivo WRFout</p>',
     'help_content': '<h3>¿Cómo usar nuestra herramienta?</h3><p>&nbsp;</p><h4>Obtener diagnóstico a partir archivo(s) WRFout:</h4><p>&nbsp;</p><ol><li>Acceder a la pestaña de <strong>Diagnosticos</strong> &nbsp;a la izquierda.</li><li>En esta pestaña encontrará dos tipos de salidas de diagnósticos en la parte superior, mapas y gráficas en 3D.</li><li>Para optener estas salidas se necesita primero hacer click en la sección de <strong>Opciones</strong> en el botón de <strong>Seleccionar Archivo(s).</strong></li><li>Del listado de archivos que aparece seleccionar uno o más marcando los checkboxs y luego hacer click en el botón <strong>Cargar Archivo(s)</strong>.</li><li>Automaticamente se mostrarán las salidas del diagnóstico con la configuración por defecto.</li></ol><p>&nbsp;</p><h4>Obtener diferentes diagnósticos:</h4><h4>&nbsp;</h4><p>Para obtener diferentes diagnósticos solo necesita utilizar el <strong>Selector de Diagnósticos </strong>en la sección de <strong>Opciones</strong>, en este momento contamos con 9 diagnósticos diferentes.</p><p>&nbsp;</p><h4>Variar la unidad de medida del diagnóstico:</h4><p>&nbsp;</p><p>Justo debajo del Selector de Diagnósticos se encuentra el <strong>Selector de Unidades</strong>, este selector cambia sus opciones en base al diagnóstico seleccionado, algunos diagnósticos solo contienen solo un tipo de unidad.</p><p>&nbsp;</p><h4>Variar número de polígonos:</h4><p>&nbsp;</p><p>En la sección de <strong>Opciones</strong> por ultimo encontraremos un deslizador con un rango que va del 5 al 15, este nos permitirá indicar la cantidad de polígonos que seran dibujados sobre el mapa.&nbsp;</p><p>&nbsp;</p>'
 }
+
+palettes  = [
+    {
+        'label': 'RdYlBu',
+        'type': 'map'
+    },
+    {
+        'label': 'viridis',
+        'type': 'map'
+    },
+    {
+        'label': 'plasma',
+        'type': 'map'
+    },
+    {
+        'label': 'inferno',
+        'type': 'map'
+    },
+    {
+        'label': 'magma',
+        'type': 'map'
+    },
+    {
+        'label': 'cividis',
+        'type': 'map'
+    },
+    {
+        'label': 'Greys',
+        'type': 'map'
+    },
+    {
+        'label': 'Purples',
+        'type': 'map'
+    },
+    {
+        'label': 'Blues',
+        'type': 'map'
+    },
+    {
+        'label': 'Greens',
+        'type': 'map'
+    },
+    {
+        'label': 'Oranges',
+        'type': 'map'
+    },
+    {
+        'label': 'Reds',
+        'type': 'map'
+    },
+    {
+        'label': 'YlOrBr',
+        'type': 'map'
+    },
+    {
+        'label': 'YlOrRd',
+        'type': 'map'
+    },
+    {
+        'label': 'OrRd',
+        'type': 'map'
+    },
+    {
+        'label': 'PuRd',
+        'type': 'map'
+    },
+    {
+        'label': 'RdPu',
+        'type': 'map'
+    },
+    {
+        'label': 'BuPu',
+        'type': 'map'
+    },
+    {
+        'label': 'GnBu',
+        'type': 'map'
+    },
+    {
+        'label': 'PuBu',
+        'type': 'map'
+    },
+    {
+        'label': 'YlGnBu',
+        'type': 'map'
+    },
+    {
+        'label': 'PuBuGn',
+        'type': 'map'
+    },
+    {
+        'label': 'YlGn',
+        'type': 'map'
+    },
+    {
+        'label': 'PiYG',
+        'type': 'map'
+    },
+    {
+        'label': 'PRGn',
+        'type': 'map'
+    },
+    {
+        'label': 'BrBG',
+        'type': 'map'
+    },
+    {
+        'label': 'PuOr',
+        'type': 'map'
+    },
+    {
+        'label': 'RdGy',
+        'type': 'map'
+    },
+    {
+        'label': 'RdBu',
+        'type': 'map'
+    },
+    {
+        'label': 'RdYlGn',
+        'type': 'map'
+    },
+    {
+        'label': 'Spectral',
+        'type': 'map'
+    },
+    {
+        'label': 'coolwarm',
+        'type': 'map'
+    },
+    {
+        'label': 'bwr',
+        'type': 'map'
+    },
+    {
+        'label': 'seismic',
+        'type': 'map'
+    },
+    {
+        'label': 'twilight_shifted',
+        'type': 'map'
+    },
+    {
+        'label': 'hsv',
+        'type': 'map'
+    },
+    {
+        'label': 'Pastel1',
+        'type': 'map'
+    },
+    {
+        'label': 'Paired',
+        'type': 'map'
+    },
+    {
+        'label': 'Accent',
+        'type': 'map'
+    },
+    {
+        'label': 'Dark2',
+        'type': 'map'
+    },
+    {
+        'label': 'Set1',
+        'type': 'map'
+    },
+    {
+        'label': 'tab10',
+        'type': 'map'
+    },
+    {
+        'label': 'Blackbody',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'Bluered',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'Blues',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'Earth',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'Electric',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'Greens',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'Greys',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'Hot',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'Jet',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'Picnic',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'Portland',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'Rainbow',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'RdBu',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'Reds',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'Viridis',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'YlGnBu',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'YlOrRd',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'Plasma',
+        'type': '3d_graphic'
+    },
+    {
+        'label': 'Cividis',
+        'type': '3d_graphic'
+    }
+]

@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'api',
     'manager',
     'workers',
+    'wrf_logic',
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',

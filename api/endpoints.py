@@ -16,7 +16,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.http import HttpResponse, FileResponse
 from api.models import WRFoutFile
-from workers.models import Worker, Diagnostic
+from wrf_logic.models import Diagnostic
+from workers.models import Worker
 from manager.models import Content, Logs
 from backend_django_tesis.settings import BASE_DIR, MEDIA_PROFILES_URL, MEDIA_ICONS_URL, MEDIA_IMAGES_URL
 

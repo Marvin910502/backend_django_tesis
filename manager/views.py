@@ -8,7 +8,8 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from backend_django_tesis.settings import LOGIN_URL, MEDIA_PROFILES_URL, MEDIA_ICONS_URL, MEDIA_IMAGES_URL
 
-from workers.models import Worker, Diagnostic
+from workers.models import Worker
+from wrf_logic.models import Diagnostic
 from api.models import WRFoutFile
 from manager.models import Content, Logs
 from django.contrib.auth.models import User

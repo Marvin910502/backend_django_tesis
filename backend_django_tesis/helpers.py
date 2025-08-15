@@ -1,10 +1,11 @@
 import requests
 
-from backend_django_tesis.initial_data import initial_content, admin_user
+from backend_django_tesis.initial_data import initial_content, admin_user, palettes
 from django.contrib.auth.models import User
 from django.core.files import File
 from workers.models import Worker
 from manager.models import Content
+from wrf_logic.models import Palette
 
 
 def populate_database():
@@ -52,3 +53,11 @@ def populate_database():
         content.card_diagnostics_image.save(initial_content['card_diagnostics_image_name'], File(file), save=True)
     with open(card_my_diagnostics_image, 'rb') as file:
         content.card_my_diagnostics_image.save(initial_content['card_my_diagnostics_image_name'], File(file), save=True)
+
+
+def populate_palettes():
+    for palette in palettes:
+        Palette.objects.create(
+            label=palette['label'],
+            type=palette['type']
+        )
