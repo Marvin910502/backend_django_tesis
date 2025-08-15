@@ -15,11 +15,13 @@ from rest_framework import permissions, status
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.http import HttpResponse, FileResponse
-from api.models import WRFoutFile
-from wrf_logic.models import Diagnostic
-from workers.models import Worker
-from manager.models import Content, Logs
 from backend_django_tesis.settings import BASE_DIR, MEDIA_PROFILES_URL, MEDIA_ICONS_URL, MEDIA_IMAGES_URL
+
+# Models
+import backend_django_tesis.models_export as MODELS
+
+# Utils
+from api.utils import convert_filter
 
 # WRF processing libraries
 from netCDF4 import Dataset
@@ -27,6 +29,7 @@ import matplotlib.pyplot as plt
 import geojsoncontour
 import numpy as np
 from wrf import getvar, latlon_coords
+
 
 
 # Selectors
@@ -99,7 +102,7 @@ class GetUserData(APIView):
                 'profile_image': worker.image_name
             }
 
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='get_user_data',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -109,7 +112,7 @@ class GetUserData(APIView):
             )
             return Response(response, status=status.HTTP_200_OK)
         except:
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='get_user_data',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -133,7 +136,7 @@ class RegisterView(APIView):
             department = data.get('department')
 
             if request.user:
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='create_user',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -148,7 +151,7 @@ class RegisterView(APIView):
                     password=password,
                     email=username
                 )
-                Worker.objects.create(
+                MODELS.Worker.objects.create(
                     user=user,
                     name=name if name else '',
                     last_names=last_names if last_names else '',
@@ -156,7 +159,7 @@ class RegisterView(APIView):
                     isGuess=True
                 )
 
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='create_user',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -167,7 +170,7 @@ class RegisterView(APIView):
                 return Response({"success": "User create successfully"}, status=status.HTTP_201_CREATED)
         except Exception as error:
             print(error)
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='create_user',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -185,7 +188,7 @@ class UploadProfileImage(APIView):
         data = self.request.data
         try:
             user = request.user
-            worker = Worker.objects.filter(user=user).first()
+            worker = MODELS.Worker.objects.filter(user=user).first()
             file = data.get('file')
             file.name = uuid.uuid4().__str__()
 
@@ -199,7 +202,7 @@ class UploadProfileImage(APIView):
             worker.image_name = file.name
             worker.save()
 
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='update_user_avatar',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -210,7 +213,7 @@ class UploadProfileImage(APIView):
             return Response({"success": "Profile image updated", "profile_image": worker.image_name}, status=status.HTTP_201_CREATED)
         except Exception as error:
             print(error)
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='update_user_avatar',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -285,7 +288,7 @@ class UpdateUser(APIView):
                     'profile_image': worker.image_name
                 }
 
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='update_user_data',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -295,7 +298,7 @@ class UpdateUser(APIView):
                 )
                 return Response(response, status=status.HTTP_200_OK)
             else:
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='update_user',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -305,7 +308,7 @@ class UpdateUser(APIView):
                 )
                 return Response({'error': 'The user not exist'}, status=status.HTTP_401_UNAUTHORIZED)
         except:
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='update_user',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -331,7 +334,7 @@ class ChangePasswd(APIView):
                 user.set_password(password)
                 user.save()
 
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='change_password',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -341,7 +344,7 @@ class ChangePasswd(APIView):
                 )
                 return Response({'success': 'Password changed successfully'}, status=status.HTTP_201_CREATED)
             else:
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='change_password',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -352,7 +355,7 @@ class ChangePasswd(APIView):
                 return Response({'error': 'Wrong old password'}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as error:
             print(error)
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='change_password',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -380,7 +383,7 @@ class TwoDimensionsVariablesMaps(APIView):
             polygons = data.get('polygons')
 
             if not urls:
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='2d_maps_data',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -390,7 +393,7 @@ class TwoDimensionsVariablesMaps(APIView):
                 )
                 return Response({'error': 'No url data'}, status=status.HTTP_400_BAD_REQUEST)
             if not diagnostic:
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='2d_maps_data',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -400,7 +403,7 @@ class TwoDimensionsVariablesMaps(APIView):
                 )
                 return Response({'error': 'No diagnostic data'}, status=status.HTTP_400_BAD_REQUEST)
             if index is None:
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='2d_maps_data',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -410,7 +413,7 @@ class TwoDimensionsVariablesMaps(APIView):
                 )
                 return Response({'error': 'No index data'}, status=status.HTTP_400_BAD_REQUEST)
             if not units:
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='2d_maps_data',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -420,7 +423,7 @@ class TwoDimensionsVariablesMaps(APIView):
                 )
                 return Response({'error': 'No units data'}, status=status.HTTP_400_BAD_REQUEST)
             if polygons is None:
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='2d_maps_data',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -450,7 +453,7 @@ class TwoDimensionsVariablesMaps(APIView):
                     maximum = round(diag.data.max(), 8)
                     minimum = round(diag.data.min(), 8)
                 except:
-                    Logs.objects.create(
+                    MODELS.Logs.objects.create(
                         action='2d_maps_data',
                         username=data.get('username'),
                         metadata=get_serialized_meta_data(self.request),
@@ -468,7 +471,7 @@ class TwoDimensionsVariablesMaps(APIView):
                     maximum = round(diag.data.max(), 8)
                     minimum = round(diag.data.min(), 8)
                 except:
-                    Logs.objects.create(
+                    MODELS.Logs.objects.create(
                         action='2d_maps_data',
                         username=data.get('username'),
                         metadata=get_serialized_meta_data(self.request),
@@ -507,7 +510,7 @@ class TwoDimensionsVariablesMaps(APIView):
                 'minimum': minimum_default,
             }
 
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='2d_maps_data',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -520,7 +523,7 @@ class TwoDimensionsVariablesMaps(APIView):
             return Response(response, status=status.HTTP_200_OK)
         except Exception as error:
             print(error)
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='2d_maps_data',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -543,7 +546,7 @@ class CrossSections(APIView):
             units = data.get('units')
 
             if not urls:
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='cross_section_data',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -553,7 +556,7 @@ class CrossSections(APIView):
                 )
                 return Response({'error': 'No url data'}, status=status.HTTP_400_BAD_REQUEST)
             if not diagnostic:
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='cross_section_data',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -563,7 +566,7 @@ class CrossSections(APIView):
                 )
                 return Response({'error': 'No diagnostic data'}, status=status.HTTP_400_BAD_REQUEST)
             if index is None:
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='cross_section_data',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -573,7 +576,7 @@ class CrossSections(APIView):
                 )
                 return Response({'error': 'No index data'}, status=status.HTTP_400_BAD_REQUEST)
             if not units:
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='cross_section_data',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -609,7 +612,7 @@ class CrossSections(APIView):
                 'max_lat': max_lat,
             }
 
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='cross_section_data',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -623,7 +626,7 @@ class CrossSections(APIView):
             return Response(response, status=status.HTTP_200_OK)
         except Exception as error:
             print(error)
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='cross_section_data',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -638,9 +641,9 @@ class GetMaxMinData(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, username):
-        worker = Worker.objects.filter(user__username=username).first()
+        worker = MODELS.Worker.objects.filter(user__username=username).first()
         try:
-            diagnostics = Diagnostic.objects.filter(worker=worker)
+            diagnostics = MODELS.Diagnostic.objects.filter(worker=worker)
             data = []
 
             for diagnostic in MAPS_DIAGNOSTICS_2D_LABEL.keys():
@@ -660,11 +663,11 @@ class GetListFiles(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
-        WRFoutFile.refresh_list_of_files()
+        MODELS.WRFoutFile.refresh_list_of_files()
         data = self.request.data
         try:
             list_file = []
-            for file in WRFoutFile.objects.all().order_by(data.get('order')):
+            for file in MODELS.WRFoutFile.objects.all().order_by(data.get('order')):
                 if file.path_file:
                     path = file.path_file.path
                 else:
@@ -677,7 +680,7 @@ class GetListFiles(APIView):
                         'size': file.size,
                     }
                 )
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='get_list_files',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -687,7 +690,7 @@ class GetListFiles(APIView):
             )
             return Response(list_file, status=status.HTTP_200_OK)
         except:
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='get_list_files',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -706,13 +709,13 @@ class SaveFile(APIView):
         try:
             file = data.get('file')
             file_name = file.name.replace(' ', '_').replace('(', '').replace(')', '').replace('[', '').replace(']', '').replace(':', '')
-            content = Content.objects.first()
+            content = MODELS.Content.objects.first()
 
-            valid_space = (content.server_space - WRFoutFile.get_used_space()) - round(file.size/1000000000, 2)
+            valid_space = (content.server_space - MODELS.WRFoutFile.get_used_space()) - round(file.size/1000000000, 2)
 
             if valid_space >= 0:
-                if not WRFoutFile.objects.filter(name=file_name).first():
-                    wrf_data = WRFoutFile.objects.create(
+                if not MODELS.WRFoutFile.objects.filter(name=file_name).first():
+                    wrf_data = MODELS.WRFoutFile.objects.create(
                         name=file_name,
                         path_file=file,
                         size=round(file.size/1000000, 2)
@@ -723,7 +726,7 @@ class SaveFile(APIView):
                     except:
                         os.remove(f"{BASE_DIR}/wrfout_files/{wrf_data.name}")
                         wrf_data.delete()
-                        Logs.objects.create(
+                        MODELS.Logs.objects.create(
                             action='save_file',
                             username=data.get('username'),
                             metadata=get_serialized_meta_data(self.request),
@@ -733,7 +736,7 @@ class SaveFile(APIView):
                         )
                         return Response({'error': 'This type of file is not compatible'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-                    Logs.objects.create(
+                    MODELS.Logs.objects.create(
                         action='save_file',
                         username=data.get('username'),
                         metadata=get_serialized_meta_data(self.request),
@@ -743,7 +746,7 @@ class SaveFile(APIView):
                     )
                     return Response({'success': 'The was uploaded'}, status=status.HTTP_201_CREATED)
                 else:
-                    Logs.objects.create(
+                    MODELS.Logs.objects.create(
                         action='save_file',
                         username=data.get('username'),
                         metadata=get_serialized_meta_data(self.request),
@@ -753,7 +756,7 @@ class SaveFile(APIView):
                     )
                     return Response({'warning:' 'This file already exist'}, status=status.HTTP_208_ALREADY_REPORTED)
             else:
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='save_file',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -763,7 +766,7 @@ class SaveFile(APIView):
                 )
                 return Response({'error': 'There is no space on the server'}, status=status.HTTP_507_INSUFFICIENT_STORAGE)
         except:
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='save_file',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -781,7 +784,7 @@ class DeleteFile(APIView):
         data = self.request.data
         try:
             os.remove(f"{BASE_DIR}/wrfout_files/{data.get('file_name')}")
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='delete_file',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -791,7 +794,7 @@ class DeleteFile(APIView):
             )
             return Response({'success': 'The file was deleted'}, status=status.HTTP_200_OK)
         except:
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='delete_file',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -811,7 +814,7 @@ class SaveDiagnostic(APIView):
     def post(self, request):
         data = self.request.data
         try:
-            worker = Worker.objects.filter(user__email=data['username']).first()
+            worker = MODELS.Worker.objects.filter(user__email=data['username']).first()
             geojson = data.get('geojson')
             lat = data.get('lat')
             lon = data.get('lon')
@@ -831,9 +834,9 @@ class SaveDiagnostic(APIView):
             y_min = data.get('minY')
             y_max = data.get('maxY')
 
-            diagnostics = Diagnostic.objects.filter(worker=worker)
+            diagnostics = MODELS.Diagnostic.objects.filter(worker=worker)
             if not diagnostics.filter(file_name=file_name).first():
-                Diagnostic.objects.create(
+                MODELS.Diagnostic.objects.create(
                     worker=worker,
                     geojson=geojson,
                     lat=lat,
@@ -854,7 +857,7 @@ class SaveDiagnostic(APIView):
                     min_y=y_min,
                     max_y=y_max
                 )
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='save_diagnostic',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -864,7 +867,7 @@ class SaveDiagnostic(APIView):
                 )
                 return Response({'success': 'A map data was save with success'}, status=status.HTTP_201_CREATED)
             else:
-                Logs.objects.create(
+                MODELS.Logs.objects.create(
                     action='save_diagnostic',
                     username=data.get('username'),
                     metadata=get_serialized_meta_data(self.request),
@@ -875,7 +878,7 @@ class SaveDiagnostic(APIView):
                 return Response({'error': 'Diagnostic was already save'}, status=status.HTTP_208_ALREADY_REPORTED)
         except Exception as error_general:
             print(error_general)
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='save_diagnostic',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -892,8 +895,8 @@ class GetDiagnosticList(APIView):
     def post(self, request):
         data = self.request.data
         try:
-            worker = Worker.objects.filter(user__email=data.get('username')).first()
-            diagnostics = Diagnostic.objects.filter(worker=worker).order_by(data.get('order_element'))
+            worker = MODELS.Worker.objects.filter(user__email=data.get('username')).first()
+            diagnostics = MODELS.Diagnostic.objects.filter(worker=worker).order_by(data.get('order_element'))
             response = []
             for diagnostic in diagnostics:
                 response.append({
@@ -907,7 +910,7 @@ class GetDiagnosticList(APIView):
                     'units': diagnostic.unit,
                 })
 
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='get_diagnostics',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -918,7 +921,7 @@ class GetDiagnosticList(APIView):
             return Response(response, status=status.HTTP_200_OK)
         except Exception as error:
             print(error)
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='get_diagnostics',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -936,7 +939,7 @@ class GetDiagnostic(APIView):
         data = self.request.data
         try:
             diagnostic_id = data.get('diagnostic_id')
-            diagnostic = Diagnostic.objects.filter(id=diagnostic_id).first()
+            diagnostic = MODELS.Diagnostic.objects.filter(id=diagnostic_id).first()
             response = {
                     'geojson': diagnostic.geojson,
                     'lat': diagnostic.lat,
@@ -969,11 +972,11 @@ class DeleteDiagnostic(APIView):
     def post(self, request):
         data = self.request.data
         try:
-            worker = Worker.objects.filter(user__email=data.get('username')).first()
-            diagnostic = Diagnostic.objects.filter(file_name=data.get('file_name'), worker=worker).first()
+            worker = MODELS.Worker.objects.filter(user__email=data.get('username')).first()
+            diagnostic = MODELS.Diagnostic.objects.filter(file_name=data.get('file_name'), worker=worker).first()
             diagnostic.delete()
 
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='delete_diagnostic',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -983,7 +986,7 @@ class DeleteDiagnostic(APIView):
             )
             return Response({'success': 'Diagnostic data deleted'}, status=status.HTTP_200_OK)
         except:
-            Logs.objects.create(
+            MODELS.Logs.objects.create(
                 action='delete_diagnostic',
                 username=data.get('username'),
                 metadata=get_serialized_meta_data(self.request),
@@ -1001,11 +1004,11 @@ class GetContent(APIView):
 
     def get(self, request):
         try:
-            content = Content.objects.first()
+            content = MODELS.Content.objects.first()
             response = {
                 'site_title': content.site_title,
                 'server_space': content.server_space,
-                'used_space': WRFoutFile.get_used_space(),
+                'used_space': MODELS.WRFoutFile.get_used_space(),
                 'icon': content.icon_name,
                 'favicon': content.favicon_name,
                 'home_image': content.home_top_image_name,
@@ -1049,5 +1052,27 @@ class GetImage(APIView):
             except:
                 with open(f'{MEDIA_IMAGES_URL}/default.png', 'rb') as img:
                     return HttpResponse(img.read(), content_type='image/svg')
+        except:
+            return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+# NEW ENDPOINTS -----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+class SearchRead(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        # model, filters, _, _ = get_data(request)
+        model = request.data['model']
+        filters = request.data.get('filters', [])
+
+        try:
+            ModelClass = globals()['MODELS'].__dict__.get(model, None)
+            if ModelClass:
+                f = convert_filter(filters)
+                result = ModelClass.objects.filter(f).values()
+                return Response(result, status=status.HTTP_200_OK)
+
         except:
             return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

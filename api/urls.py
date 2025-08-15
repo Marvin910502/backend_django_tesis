@@ -19,7 +19,8 @@ from api.endpoints import (
     GetIcon,
     GetImage,
     GetMaxMinData,
-    TestAuthView
+    TestAuthView,
+    SearchRead
 )
 from api.views import PruebaError
 from rest_framework_simplejwt.views import (
@@ -59,4 +60,5 @@ urlpatterns = [
     path('media/get-image/<str:filename>', GetImage.as_view(), name='get-image'),
     # PruebaError
     path('prueba-error/', PruebaError.as_view(), name='prueba_error'),
+    path('search-read/', SearchRead.as_view(), name='search_read'),
 ]
