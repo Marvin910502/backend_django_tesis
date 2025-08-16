@@ -4,7 +4,6 @@ from django.db import migrations, models
 import django.db.models.deletion
 import wrf_logic.models
 from backend_django_tesis.helpers import populate_diagnostic_data
-from wrf_logic.models import Unit
 
 def populate_diagnostic_data_models(apps, schema_editor):
     populate_diagnostic_data()
@@ -19,32 +18,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='Diagnostic',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('reference', models.CharField(max_length=200, null=False, blank=False)),
-                ('geojson', models.TextField()),
-                ('lat', models.FloatField()),
-                ('lon', models.FloatField()),
-                ('diagnostic_type_id', models.CharField(max_length=100)),
-                ('map_palet', models.CharField(blank=True, max_length=100, null=True)),
-                ('maximum', models.FloatField(blank=True, null=True)),
-                ('minimum', models.FloatField(blank=True, null=True)),
-                ('date_time', models.DateTimeField(blank=True, max_length=150, null=True)),
-                ('unit', models.CharField(max_length=20)),
-                ('polygons', models.IntegerField()),
-                ('file_name', models.CharField(max_length=100)),
-                ('z', models.TextField()),
-                ('x', models.TextField()),
-                ('y', models.TextField()),
-                ('min_x', models.FloatField()),
-                ('max_x', models.FloatField()),
-                ('min_y', models.FloatField()),
-                ('max_y', models.FloatField()),
-                ('worker', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='workers.worker')),
-            ],
-        ),
         migrations.CreateModel(
             name='Palette',
             fields=[
@@ -68,6 +41,32 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=100, unique=True)),
                 ('unit_ids', models.ManyToManyField('Unit', related_name='diagnostic_type_ids'))
+            ],
+        ),
+        migrations.CreateModel(
+            name='Diagnostic',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('reference', models.CharField(max_length=200, null=False, blank=False)),
+                ('geojson', models.TextField()),
+                ('lat', models.FloatField()),
+                ('lon', models.FloatField()),
+                ('map_palet', models.CharField(blank=True, max_length=100, null=True)),
+                ('maximum', models.FloatField(blank=True, null=True)),
+                ('minimum', models.FloatField(blank=True, null=True)),
+                ('date_time', models.DateTimeField(blank=True, max_length=150, null=True)),
+                ('unit', models.CharField(max_length=20)),
+                ('polygons', models.IntegerField()),
+                ('file_name', models.CharField(max_length=100)),
+                ('z', models.TextField()),
+                ('x', models.TextField()),
+                ('y', models.TextField()),
+                ('min_x', models.FloatField()),
+                ('max_x', models.FloatField()),
+                ('min_y', models.FloatField()),
+                ('max_y', models.FloatField()),
+                ('diagnostic_type_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='wrf_logic.diagnostictype', null=False, blank=False)),
+                ('worker_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='workers.worker', null=False, blank=False))
             ],
         ),
         migrations.RunPython(populate_diagnostic_data_models)

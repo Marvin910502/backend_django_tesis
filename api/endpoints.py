@@ -1062,6 +1062,7 @@ class SearchRead(APIView):
     def post(self, request):
         model = request.data['model']
         filters = request.data.get('filters', [])
+        fields = request.data.get('fields', [])
         order = request.data.get('order', '')
         offset = request.data.get('offset', 0)
         limit = request.data.get('limit', 20)
@@ -1070,7 +1071,7 @@ class SearchRead(APIView):
             model_class = globals()['MODELS'].__dict__.get(model, None)
             if model_class:
                 f = convert_filter(filters)
-                result = model_class.objects.filter(f).order_by(order)[offset:offset+limit].values()
+                result = model_class.objects.filter(f).order_by(order)[offset:offset+limit].values(*fields)
                 return Response(result, status=status.HTTP_200_OK)
             else:
                 return Response({"error": f'Model "{model}" not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -1085,14 +1086,17 @@ class CallBack(APIView):
     def post(self, request):
         model = request.data['model']
         method = request.data['method']
-        args = request.data['args']
+        kwargs = request.data['kwargs']
 
         try:
             model_class = globals()['MODELS'].__dict__.get(model, None)
             if model_class:
                 method_func = getattr(model_class, method, None)
                 if callable(method_func):
-                    result = method_func(args)
+                    if 'id' in request.data:
+                        result = method_func(request.data['id'], **kwargs)
+                    else:
+                        result = method_func(**kwargs)
                     return Response(result, status=status.HTTP_200_OK)
                 else:
                     return Response({"error": f'Method "{method}" not found in model "{model}"'}, status=status.HTTP_404_NOT_FOUND)

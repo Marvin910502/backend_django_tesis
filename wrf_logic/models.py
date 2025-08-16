@@ -19,13 +19,30 @@ def validate_type(value):
     if value not in valid_values:
         raise ValidationError(f'{value} no es un valor válido.')
 
+class Palette(models.Model):
+    TYPE_CHOICES = [
+        ('map', 'Map'),
+        ('3d_graphic', '3D Graphic'),
+    ]
+
+    name = models.CharField(max_length=100)
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES, validators=[validate_type])
+
+class Unit(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    symbol = models.CharField(max_length=50, unique=True)
+
+class DiagnosticType(models.Model):
+    name = models.CharField(max_length=100)
+    unit_ids = models.ManyToManyField('Unit', related_name='diagnostic_type_ids')
+
 class Diagnostic(models.Model):
-    worker_id = models.ForeignKey(Worker, on_delete=models.CASCADE)
+    worker_id = models.ForeignKey(Worker, on_delete=models.CASCADE, null=False, blank=False)
+    diagnostic_type_id = models.ForeignKey(DiagnosticType, on_delete=models.CASCADE, null=False, blank=False)
     reference = models.CharField(max_length=200, null=False, blank=False)
     geojson = models.TextField()
     lat = models.FloatField()
     lon = models.FloatField()
-    diagnostic_type_id = models.ForeignKey('DiagnosticType', on_delete=models.CASCADE, null=False, blank=False)
     map_palet = models.CharField(max_length=100, null=True, blank=True)
     maximum = models.FloatField(null=True, blank=True)
     minimum = models.FloatField(null=True, blank=True)
@@ -99,8 +116,8 @@ class Diagnostic(models.Model):
             'lat': round(diag.projection.moad_cen_lat, 0),
             'long': round(diag.projection.stand_lon, 0),
             'data': json.dumps(diagnostic_array),
-            'lat_graph': json.dumps(latitudes),
-            'long_graph': json.dumps(longitudes),
+            'lat3d': json.dumps(latitudes),
+            'long3d': json.dumps(longitudes),
             'min_long': min_long,
             'max_long': max_long,
             'min_lat': min_lat,
@@ -108,22 +125,3 @@ class Diagnostic(models.Model):
         }
 
         return response
-
-
-
-class Palette(models.Model):
-    TYPE_CHOICES = [
-        ('map', 'Map'),
-        ('3d_graphic', '3D Graphic'),
-    ]
-
-    name = models.CharField(max_length=100)
-    type = models.CharField(max_length=20, choices=TYPE_CHOICES, validators=[validate_type])
-
-class Unit(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    symbol = models.CharField(max_length=50, unique=True)
-
-class DiagnosticType(models.Model):
-    name = models.CharField(max_length=100)
-    unit_ids = models.ManyToManyField('Unit', related_name='diagnostic_type_ids')
