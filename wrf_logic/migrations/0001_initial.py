@@ -2,6 +2,12 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
+import wrf_logic.models
+from backend_django_tesis.helpers import populate_diagnostic_data
+from wrf_logic.models import Unit
+
+def populate_diagnostic_data_models(apps, schema_editor):
+    populate_diagnostic_data()
 
 
 class Migration(migrations.Migration):
@@ -17,10 +23,11 @@ class Migration(migrations.Migration):
             name='Diagnostic',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('reference', models.CharField(max_length=200, null=False, blank=False)),
                 ('geojson', models.TextField()),
                 ('lat', models.FloatField()),
                 ('lon', models.FloatField()),
-                ('diagnostic', models.CharField(max_length=100)),
+                ('diagnostic_type_id', models.CharField(max_length=100)),
                 ('map_palet', models.CharField(blank=True, max_length=100, null=True)),
                 ('maximum', models.FloatField(blank=True, null=True)),
                 ('minimum', models.FloatField(blank=True, null=True)),
@@ -38,4 +45,30 @@ class Migration(migrations.Migration):
                 ('worker', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='workers.worker')),
             ],
         ),
+        migrations.CreateModel(
+            name='Palette',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=100)),
+                ('type', models.CharField(choices=[('map', 'Map'), ('3d_graphic', '3D Graphic')], max_length=20,
+                                          validators=[wrf_logic.models.validate_type])),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Unit',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=100, unique=True)),
+                ('symbol', models.CharField(max_length=50, unique=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='DiagnosticType',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=100, unique=True)),
+                ('unit_ids', models.ManyToManyField('Unit', related_name='diagnostic_type_ids'))
+            ],
+        ),
+        migrations.RunPython(populate_diagnostic_data_models)
     ]

@@ -274,3 +274,130 @@ palettes  = [
         'type': '3d_graphic'
     }
 ]
+
+units = [
+    {
+        'id': 1,
+        'name': 'Grados por Celsius',
+        'symbol': 'degC'
+    },
+    {
+        'id': 2,
+        'name': 'Grados por Fahrenheit',
+        'symbol': 'degF'
+    },
+    {
+        'id': 3,
+        'name': 'Kelvin',
+        'symbol': 'K'
+    },
+    {
+        'id': 4,
+        'name': 'Metros',
+        'symbol': 'm'
+    },
+    {
+        'id': 5,
+        'name': 'Kilometros',
+        'symbol': 'km'
+    },
+    {
+        'id': 6,
+        'name': 'Decímetros',
+        'symbol': 'dm'
+    },
+    {
+        'id': 7,
+        'name': 'Pies',
+        'symbol': 'ft'
+    },
+    {
+        'id': 8,
+        'name': 'Millas',
+        'symbol': 'mi'
+    },
+    {
+        'id': 9,
+        'name': 'Metros Cuadrados',
+        'symbol': 'm2'
+    },
+    {
+        'id': 10,
+        'name': 'Kilogramos',
+        'symbol': 'kg'
+    },
+    {
+        'id': 11,
+        'name': 'Porcentaje',
+        'symbol': '%'
+    },
+    {
+        'id': 12,
+        'name': 'Pascales',
+        'symbol': 'Pa'
+    },
+    {
+        'id': 13,
+        'name': 'Hectopascales',
+        'symbol': 'hPa'
+    },
+    {
+        'id': 14,
+        'name': 'Milibares',
+        'symbol': 'mb'
+    },
+    {
+        'id': 15,
+        'name': 'Centímetros de Mercurio',
+        'symbol': 'torr'
+    },
+    {
+        'id': 16,
+        'name': 'Milímetros de Mercurio',
+        'symbol': 'mmhg'
+    },
+    {
+        'id': 17,
+        'name': 'Atmosferas',
+        'symbol': 'atm'
+    }
+]
+
+diagnostic_types = [
+    {
+        'name': 'Punto de Condensación',
+        'unit_ids': [1, 2, 3]
+    },
+    {
+        'name': 'Humedad Relativa',
+        'unit_ids': [10]
+    },
+    {
+        'name': 'Altura del Terreno',
+        'unit_ids': [4, 5, 6, 7, 8]
+    },
+    {
+        'name': 'Temperatura Superior de las Nubes',
+        'unit_ids': [1, 2, 3]
+    },
+    {
+        'name': 'Temperatura',
+        'unit_ids': [3]
+    },
+    {
+        'name': 'Helicidad Relativa de Tormenta',
+        'unit_ids': [9]
+    },
+    {
+        'name': 'Agua Precipitable',
+        'unit_ids': [10]
+    },
+    {
+        'name': 'Presión a Nivel del Mar',
+        'unit_ids': [12, 13, 14, 15, 16, 17]
+    },
+    {
+        'name': 'Helicidad de Corriente Ascendente',
+        'unit_ids': [9]
+    }
+]

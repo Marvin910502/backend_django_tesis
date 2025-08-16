@@ -442,9 +442,6 @@ class TwoDimensionsVariablesMaps(APIView):
             for file in wrfout:
                 max_index = max_index + file.dimensions['Time'].size
 
-            maximum = None
-            minimum = None
-
             if data.get('diagnostic') in DEFAULT_UNIT_DIAGNOSTICS:
                 try:
                     diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index)
@@ -1004,7 +1001,7 @@ class GetContent(APIView):
 
     def get(self, request):
         try:
-            content = MODELS.Content.objects.first()
+            content = MODELS.Content.objects.order_by()
             response = {
                 'site_title': content.site_title,
                 'server_space': content.server_space,
@@ -1063,16 +1060,43 @@ class SearchRead(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
-        # model, filters, _, _ = get_data(request)
         model = request.data['model']
         filters = request.data.get('filters', [])
+        order = request.data.get('order', '')
+        offset = request.data.get('offset', 0)
+        limit = request.data.get('limit', 20)
 
         try:
-            ModelClass = globals()['MODELS'].__dict__.get(model, None)
-            if ModelClass:
+            model_class = globals()['MODELS'].__dict__.get(model, None)
+            if model_class:
                 f = convert_filter(filters)
-                result = ModelClass.objects.filter(f).values()
+                result = model_class.objects.filter(f).order_by(order)[offset:offset+limit].values()
                 return Response(result, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": f'Model "{model}" not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        except:
+            return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class CallBack(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        model = request.data['model']
+        method = request.data['method']
+        args = request.data['args']
+
+        try:
+            model_class = globals()['MODELS'].__dict__.get(model, None)
+            if model_class:
+                method_func = getattr(model_class, method, None)
+                if callable(method_func):
+                    result = method_func(args)
+                    return Response(result, status=status.HTTP_200_OK)
+                else:
+                    return Response({"error": f'Method "{method}" not found in model "{model}"'}, status=status.HTTP_404_NOT_FOUND)
+            else:
+                return Response({"error": f'Model "{model}" not found'}, status=status.HTTP_404_NOT_FOUND)
         except:
             return Response({"error": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

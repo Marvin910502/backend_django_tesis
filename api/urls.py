@@ -20,7 +20,8 @@ from api.endpoints import (
     GetImage,
     GetMaxMinData,
     TestAuthView,
-    SearchRead
+    SearchRead,
+    CallBack
 )
 from api.views import PruebaError
 from rest_framework_simplejwt.views import (
@@ -61,4 +62,5 @@ urlpatterns = [
     # PruebaError
     path('prueba-error/', PruebaError.as_view(), name='prueba_error'),
     path('search-read/', SearchRead.as_view(), name='search_read'),
+    path('call-back/', CallBack.as_view(), name='search_read'),
 ]

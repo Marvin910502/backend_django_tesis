@@ -1,11 +1,11 @@
 import requests
 
-from backend_django_tesis.initial_data import initial_content, admin_user, palettes
+from backend_django_tesis.initial_data import initial_content, admin_user, palettes, units, diagnostic_types
 from django.contrib.auth.models import User
 from django.core.files import File
 from workers.models import Worker
 from manager.models import Content
-from wrf_logic.models import Palette
+from wrf_logic.models import Palette, Unit, DiagnosticType
 
 
 def populate_database():
@@ -55,9 +55,22 @@ def populate_database():
         content.card_my_diagnostics_image.save(initial_content['card_my_diagnostics_image_name'], File(file), save=True)
 
 
-def populate_palettes():
+def populate_diagnostic_data():
     for palette in palettes:
         Palette.objects.create(
-            label=palette['label'],
+            name=palette['label'],
             type=palette['type']
         )
+    for unit in units:
+        Unit.objects.create(
+            name=unit['name'],
+            symbol=unit['symbol']
+        )
+    for diagnostic_type in diagnostic_types:
+        diagnostic_type_instance = DiagnosticType.objects.create(
+            name=diagnostic_type['name']
+        )
+        for unit in diagnostic_type['unit_ids']:
+            unit_instance = Unit.objects.get(id=unit)
+            diagnostic_type_instance.unit_ids.add(unit_instance)
+        diagnostic_type_instance.save()
