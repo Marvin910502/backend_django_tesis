@@ -1,6 +1,7 @@
 from django.db import models
 from rest_framework.exceptions import ValidationError
 from workers.models import Worker
+from api.models import WRFoutFile
 
 # WRF processing libraries
 from netCDF4 import Dataset
@@ -34,6 +35,7 @@ class Unit(models.Model):
 
 class DiagnosticType(models.Model):
     name = models.CharField(max_length=100)
+    value = models.CharField(max_length=100)
     unit_ids = models.ManyToManyField('Unit', related_name='diagnostic_type_ids')
 
 class Diagnostic(models.Model):
@@ -60,11 +62,11 @@ class Diagnostic(models.Model):
 
     @staticmethod
     def process_wrf_file(**kwargs):
-        urls = kwargs.get('url')
-        diagnostic = kwargs.get('diagnostic')
-        map_palette = kwargs.get('map_palet')
+        urls = WRFoutFile.objects.filter(id__in=kwargs.get('url_ids')).values_list('path_file', flat=True)
+        diagnostic = DiagnosticType.objects.filter(id=kwargs.get('diagnostic').get('id')).first().value
+        map_palette = kwargs.get('map_palette').get('name')
         index = kwargs.get('index')
-        units = kwargs.get('units')
+        units = Unit.objects.filter(id=kwargs.get('units').get('id')).first().symbol
         polygons = kwargs.get('polygons')
 
         try:

@@ -68,7 +68,8 @@ def populate_diagnostic_data():
         )
     for diagnostic_type in diagnostic_types:
         diagnostic_type_instance = DiagnosticType.objects.create(
-            name=diagnostic_type['name']
+            name=diagnostic_type['name'],
+            value=diagnostic_type['value']
         )
         for unit in diagnostic_type['unit_ids']:
             unit_instance = Unit.objects.get(id=unit)

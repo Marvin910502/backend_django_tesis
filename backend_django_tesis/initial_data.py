@@ -366,38 +366,47 @@ units = [
 diagnostic_types = [
     {
         'name': 'Punto de Condensación',
+        'value': 'td2',
         'unit_ids': [1, 2, 3]
     },
     {
         'name': 'Humedad Relativa',
+        'value': 'rh2',
         'unit_ids': [10]
     },
     {
         'name': 'Altura del Terreno',
+        'value': 'ter',
         'unit_ids': [4, 5, 6, 7, 8]
     },
     {
         'name': 'Temperatura Superior de las Nubes',
+        'value': 'ctt',
         'unit_ids': [1, 2, 3]
     },
     {
         'name': 'Temperatura',
+        'value': 'T2',
         'unit_ids': [3]
     },
     {
         'name': 'Helicidad Relativa de Tormenta',
+        'value': 'helicity',
         'unit_ids': [9]
     },
     {
         'name': 'Agua Precipitable',
+        'value': 'pw',
         'unit_ids': [10]
     },
     {
         'name': 'Presión a Nivel del Mar',
+        'value': 'slp',
         'unit_ids': [12, 13, 14, 15, 16, 17]
     },
     {
         'name': 'Helicidad de Corriente Ascendente',
+        'value': 'updraft_helicity',
         'unit_ids': [9]
     }
 ]
