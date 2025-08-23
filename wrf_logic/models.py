@@ -78,7 +78,15 @@ class Diagnostic(models.Model):
         for file in wrfout:
             max_index = max_index + file.dimensions['Time'].size
 
-        diag = getvar(wrfin=wrfout, varname=diagnostic, timeidx=index, units=units)
+        params = {
+            "wrfin": wrfout,
+            "varname": diagnostic,
+            "timeidx": index,
+        }
+        if DiagnosticType.objects.filter(id=kwargs.get('diagnostic').get('id')).first().unit_ids.count() > 1:
+            params["units"] = units
+
+        diag = getvar(**params)
         maximum = round(diag.data.max(), 8)
         minimum = round(diag.data.min(), 8)
         diagnostic_dict = diag.to_dict()

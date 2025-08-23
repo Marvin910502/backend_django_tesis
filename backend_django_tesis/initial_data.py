@@ -372,7 +372,7 @@ diagnostic_types = [
     {
         'name': 'Humedad Relativa',
         'value': 'rh2',
-        'unit_ids': [10]
+        'unit_ids': [11]
     },
     {
         'name': 'Altura del Terreno',
